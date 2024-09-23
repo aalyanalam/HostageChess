@@ -524,8 +524,8 @@ move_t **knightmoves( board_t *board, int from_i, int from_j, int colour )
         }
     }
 
+    //Realloc to exact amount needed with NULL at the end
     moves = realloc(moves, (numOfMoves + 1) * sizeof(move_t *));
-
     moves[numOfMoves] = NULL;
 
     return moves;
@@ -533,12 +533,316 @@ move_t **knightmoves( board_t *board, int from_i, int from_j, int colour )
 
 move_t **bishopmoves(board_t *board, int from_i, int from_j, int colour)
 {
-    return NULL;
+    move_t **moves = malloc(15 * sizeof(move_t *)); // Allocate max possible moves + NULL pointer
+    int numOfMoves = 0;
+
+    //Move up and left  (-1, -1)
+    for (int to_i = from_i - 1, to_j = from_j - 1; to_i >= 0 && to_j >= 0; to_i--, to_j--)
+    {
+        char destination = (*board)[to_i][to_j];
+        if (destination == ' ') //Move to empty space
+        {
+            move_t *bMove = malloc(sizeof(move_t));
+            bMove->from_i = from_i;
+            bMove->from_j = from_j;
+            bMove->to_i = to_i;
+            bMove->to_j = to_j;
+            bMove->promotion = ' ';
+            bMove->hostage = ' ';
+            moves[numOfMoves++] = bMove;
+        }
+        else //Run into a piece
+        {
+            if ((colour == 0 && isupper(destination)) || (colour == 1 && islower(destination)))
+            {
+                break; //Ran into friendly piece
+            }
+            else
+            {
+                move_t *bMove = malloc(sizeof(move_t));
+                bMove->from_i = from_i;
+                bMove->from_j = from_j;
+                bMove->to_i = to_i;
+                bMove->to_j = to_j;
+                bMove->promotion = ' ';
+                bMove->hostage = ' ';
+                moves[numOfMoves++] = bMove;
+                break;
+            }
+        }
+    }
+
+    //Move up and right  (-1, +1)
+    for (int to_i = from_i - 1, to_j = from_j + 1; to_i >= 0 && to_j < 8; to_i--, to_j++)
+    {
+        char destination = (*board)[to_i][to_j];
+        if (destination == ' ') //Move to empty space
+        {
+            move_t *bMove = malloc(sizeof(move_t));
+            bMove->from_i = from_i;
+            bMove->from_j = from_j;
+            bMove->to_i = to_i;
+            bMove->to_j = to_j;
+            bMove->promotion = ' ';
+            bMove->hostage = ' ';
+            moves[numOfMoves++] = bMove;
+        }
+        else //Run into a piece
+        {
+            if ((colour == 0 && isupper(destination)) || (colour == 1 && islower(destination)))
+            {
+                break; //Ran into friendly piece
+            }
+            else
+            {
+                move_t *bMove = malloc(sizeof(move_t));
+                bMove->from_i = from_i;
+                bMove->from_j = from_j;
+                bMove->to_i = to_i;
+                bMove->to_j = to_j;
+                bMove->promotion = ' ';
+                bMove->hostage = ' ';
+                moves[numOfMoves++] = bMove;
+                break;
+            }
+        }
+    }
+
+    //Move down and left  (+1, -1)
+    for (int to_i = from_i + 1, to_j = from_j - 1; to_i < 8 && to_j >= 0; to_i++, to_j--)
+    {
+        char destination = (*board)[to_i][to_j];
+        if (destination == ' ') //Move to empty space
+        {
+            move_t *bMove = malloc(sizeof(move_t));
+            bMove->from_i = from_i;
+            bMove->from_j = from_j;
+            bMove->to_i = to_i;
+            bMove->to_j = to_j;
+            bMove->promotion = ' ';
+            bMove->hostage = ' ';
+            moves[numOfMoves++] = bMove;
+        }
+        else //Run into a piece
+        {
+            if ((colour == 0 && isupper(destination)) || (colour == 1 && islower(destination)))
+            {
+                break; //Ran into friendly piece
+            }
+            else
+            {
+                move_t *bMove = malloc(sizeof(move_t));
+                bMove->from_i = from_i;
+                bMove->from_j = from_j;
+                bMove->to_i = to_i;
+                bMove->to_j = to_j;
+                bMove->promotion = ' ';
+                bMove->hostage = ' ';
+                moves[numOfMoves++] = bMove;
+                break;
+            }
+        }
+    }
+    
+    ////Move down and right  (+1, +1)
+    for (int to_i = from_i + 1, to_j = from_j + 1; to_i < 8 && to_j < 8; to_i++, to_j++)
+    {
+        char destination = (*board)[to_i][to_j];
+        if (destination == ' ') //Move to empty space
+        {
+            move_t *bMove = malloc(sizeof(move_t));
+            bMove->from_i = from_i;
+            bMove->from_j = from_j;
+            bMove->to_i = to_i;
+            bMove->to_j = to_j;
+            bMove->promotion = ' ';
+            bMove->hostage = ' ';
+            moves[numOfMoves++] = bMove;
+        }
+        else //Run into a piece
+        {
+            if ((colour == 0 && isupper(destination)) || (colour == 1 && islower(destination)))
+            {
+                break; //Ran into friendly piece
+            }
+            else
+            {
+                move_t *bMove = malloc(sizeof(move_t));
+                bMove->from_i = from_i;
+                bMove->from_j = from_j;
+                bMove->to_i = to_i;
+                bMove->to_j = to_j;
+                bMove->promotion = ' ';
+                bMove->hostage = ' ';
+                moves[numOfMoves++] = bMove;
+                break;
+            }
+        }
+    }
+
+    //Realloc to exact amount needed with NULL at the end
+    moves = realloc(moves, (numOfMoves + 1) * sizeof(move_t *));
+    moves[numOfMoves] = NULL;
+
+    return moves;
 }
 
 move_t **rookmoves(board_t *board, int from_i, int from_j, int colour)
 {
-    return NULL;
+    move_t **moves = malloc(15 * sizeof(move_t *)); // Allocate max possible moves + NULL pointer
+    int numOfMoves = 0;
+
+    //Move up
+    for (int to_i = from_i - 1; to_i >= 0 ; to_i--)
+    {
+        char destination = (*board)[to_i][from_j];
+        if (destination == ' ') //Move to empty space
+        {
+            move_t *rMove = malloc(sizeof(move_t));
+            rMove->from_i = from_i;
+            rMove->from_j = from_j;
+            rMove->to_i = to_i;
+            rMove->to_j = from_j;
+            rMove->promotion = ' ';
+            rMove->hostage = ' ';
+            moves[numOfMoves++] = rMove;
+
+        }
+        else //Run into a piece
+        {
+
+            if ((colour == 0 && isupper(destination)) || (colour == 1 && islower(destination)))
+            {
+                break; //Ran into friendly piece
+            }
+            else
+            {
+                move_t *rMove = malloc(sizeof(move_t));
+                rMove->from_i = from_i;
+                rMove->from_j = from_j;
+                rMove->to_i = to_i;
+                rMove->to_j = from_j;
+                rMove->promotion = ' ';
+                rMove->hostage = ' ';
+                moves[numOfMoves++] = rMove;
+                break;
+            }
+        }
+    }
+
+    //Move left
+    for (int to_j = from_j - 1;to_j >= 0;to_j--)
+    {
+        char destination = (*board)[from_i][to_j];
+        if (destination == ' ') //Move to empty space
+        {
+            move_t *rMove = malloc(sizeof(move_t));
+            rMove->from_i = from_i;
+            rMove->from_j = from_j;
+            rMove->to_i = from_i;
+            rMove->to_j = to_j;
+            rMove->promotion = ' ';
+            rMove->hostage = ' ';
+            moves[numOfMoves++] = rMove;
+        }
+        else //Run into a piece
+        {
+            if ((colour == 0 && isupper(destination)) || (colour == 1 && islower(destination)))
+            {
+                break; //Ran into friendly piece
+            }
+            else
+            {
+                move_t *rMove = malloc(sizeof(move_t));
+                rMove->from_i = from_i;
+                rMove->from_j = from_j;
+                rMove->to_i = from_i;
+                rMove->to_j = to_j;
+                rMove->promotion = ' ';
+                rMove->hostage = ' ';
+                moves[numOfMoves++] = rMove;
+                break;
+            }
+        }
+    }
+
+    //Move down
+    for (int to_i = from_i + 1;to_i < 8; to_i++)
+    {
+        char destination = (*board)[to_i][from_j];
+        if (destination == ' ') //Move to empty space
+        {
+            move_t *rMove = malloc(sizeof(move_t));
+            rMove->from_i = from_i;
+            rMove->from_j = from_j;
+            rMove->to_i = to_i;
+            rMove->to_j = from_j;
+            rMove->promotion = ' ';
+            rMove->hostage = ' ';
+            moves[numOfMoves++] = rMove;
+        }
+        else //Run into a piece
+        {
+            if ((colour == 0 && isupper(destination)) || (colour == 1 && islower(destination)))
+            {
+                break; //Ran into friendly piece
+            }
+            else
+            {
+                move_t *rMove = malloc(sizeof(move_t));
+                rMove->from_i = from_i;
+                rMove->from_j = from_j;
+                rMove->to_i = to_i;
+                rMove->to_j = from_j;
+                rMove->promotion = ' ';
+                rMove->hostage = ' ';
+                moves[numOfMoves++] = rMove;
+                break;
+            }
+        }
+    }
+
+    ////Move right 
+    for (int to_j = from_j + 1;to_j < 8;to_j++)
+    {
+        char destination = (*board)[from_i][to_j];
+        if (destination == ' ') //Move to empty space
+        {
+            move_t *rMove = malloc(sizeof(move_t));
+            rMove->from_i = from_i;
+            rMove->from_j = from_j;
+            rMove->to_i = from_i;
+            rMove->to_j = to_j;
+            rMove->promotion = ' ';
+            rMove->hostage = ' ';
+            moves[numOfMoves++] = rMove;
+        }
+        else //Run into a piece
+        {
+            if ((colour == 0 && isupper(destination)) || (colour == 1 && islower(destination)))
+            {
+                break; //Ran into friendly piece
+            }
+            else
+            {
+                move_t *rMove = malloc(sizeof(move_t));
+                rMove->from_i = from_i;
+                rMove->from_j = from_j;
+                rMove->to_i = from_i;
+                rMove->to_j = to_j;
+                rMove->promotion = ' ';
+                rMove->hostage = ' ';
+                moves[numOfMoves++] = rMove;
+                break;
+            }
+        }
+    }
+
+    //Realloc to exact amount needed with NULL at the end
+    moves = realloc(moves, (numOfMoves + 1) * sizeof(move_t *));
+    moves[numOfMoves] = NULL;
+
+    return moves;
 }
 
 move_t **queenmoves(board_t *board, int from_i, int from_j, int colour)
