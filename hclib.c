@@ -77,87 +77,54 @@ char* stringboard(exboard_t* board)
         return NULL;
     }
 
-    char *boardStr = (char *)malloc(162 * sizeof(char));
+    char *boardStr = malloc(sizeof(char) *162);
     if (boardStr == NULL) 
     {
         printf("stringboard: FAILED (malloc failed)\n");
         return NULL;
     }
 
-    printf("stringboard: Converting board to string...\n");
-
-    // Black piece prison
-    memset(boardStr, ' ', 161);
-
-    //Add \n in the string
+    // Initialize the string with spaces and newlines
+    memset(boardStr, ' ', 162);
     for(int i = 8; i <= 161; i += 9) 
     {
         boardStr[i] = '\n';
     }
+    boardStr[161] = '\0';  // Null terminator
 
-    //Add black side prison to string
+    printf("stringboard: Converting board to string...\n");
+
+    // Black piece prison
     for(int i = 0; i <= 7; i++) 
     {
-        if(board->bprison[i] == '\0')    
-        {
-            for(int j = i; j <= 7; j++) 
-            {
-                boardStr[j] = ' ';
-            }
-            break;
-        }
+        if(board->bprison[i] == '\0') break;
         boardStr[i] = board->bprison[i];
-    } // 0-7 is filled, 8 is nl
-
-
+    }
     for(int i = 8; i <= 15; i++) 
     {
-        if(board->bprison[i] == '\0') 
-        {
-        for(int j = i; j <= 15; j++) 
-        {
-            boardStr[j + 1] = ' ';
-        }
-        break;
-        }
-        boardStr[i + 1] = board->bprison[i];  
-    }// 9-16 is filled, 17 is nl
-
+        if(board->bprison[i - 1] == '\0') break;
+        boardStr[i + 1] = board->bprison[i - 1];  
+    }
 
     // Black piece airfield
     for(int i = 0; i <= 7; i++) 
     {
-        if(board->bairfield[i] == '\0') 
-        {
-            for(int j = i; j <= 7; j++) 
-            {
-                boardStr[j + 18] = ' ';
-            }
-            break;
-        }
+        if(board->bairfield[i] == '\0') break;
         boardStr[i + 18] = board->bairfield[i];
-    }// 18-25 is filled, 26 is nl
-
-    for (int i = 0; i <= 7; i++) 
+    }
+    for(int i = 0; i <= 7; i++) 
     {
-        if (board->bairfield[i + 8] == '\0') 
-        {
-        for (int j = i; j <= 7; j++) 
-        {
-            boardStr[j + 27] = ' ';  
-        }
-        break;
-        }
+        if(board->bairfield[i + 8] == '\0') break;
         boardStr[i + 27] = board->bairfield[i + 8];
-    } //27-34 is filled, 35 is newline
+    }
 
-    // Separate with dashes
+    // Dashes for separation
     for(int i = 36; i <= 43; i++) 
     {
         boardStr[i] = '-';
-    } // 36-43 is filled, 44 is nl
+    }
 
-    // Black pieces from rank 8
+    // Copy the board pieces from the board array
     for(int i = 0; i <= 7; i++) 
     {
         boardStr[i + 45] = board->board[7][i];
@@ -168,70 +135,44 @@ char* stringboard(exboard_t* board)
         boardStr[i + 90] = board->board[2][i];
         boardStr[i + 99] = board->board[1][i];
         boardStr[i + 108] = board->board[0][i];
-    } // 45-115 is filled, 116 is nl
+    }
 
-    // Separate with dashes
+    // Dashes for separation
     for(int i = 117; i <= 124; i++) 
     {
         boardStr[i] = '-';
-    } // 117-124 is filled, 125 is nl
+    }
 
     // White piece airfield
     for(int i = 0; i <= 7; i++) 
     {
-        if(board->wairfield[i] == '\0') 
-        {
-            for(int j = i; j <= 7; j++) 
-            {
-                boardStr[j + 126] = ' ';
-            }
-            break;
-        }
+        if(board->wairfield[i] == '\0') break;
         boardStr[i + 126] = board->wairfield[i];
-    } // 126-133 is filled, 134 is nl
-
-    for(int i = 8; i <= 15; i++) 
+    }
+    for(int i = 0; i <= 7; i++) 
     {
-        if(board->wairfield[i] == '\0') 
-        {
-            for(int j = i; j <= 15; j++) 
-            {
-                boardStr[j + 135] = ' ';
-            }
-            break;
-        }
-        boardStr[i + 135] = board->wairfield[i];
-    } // 135-142 is filled, 143 is nl
+        if(board->wairfield[i + 8] == '\0') break;
+        boardStr[i + 135] = board->wairfield[i + 8];
+    }
 
     // White piece prison
     for(int i = 0; i <= 7; i++) 
     {
-        if(board->wprison[i] == '\0') 
-        {
-            for(int j = i; j <= 7; j++) 
-            {
-                boardStr[j + 144] = ' ';
-            }
-            break;
-        }
+        if(board->wprison[i] == '\0') break;
         boardStr[i + 144] = board->wprison[i];
-    } // 144-151 is filled, 152 is nl
-
-    for(int i = 8; i <= 15; i++) 
+    }
+    for(int i = 0; i <= 7; i++) 
     {
-        if(board->wprison[i] == '\0') 
-        {
-            for(int j = i; j <= 15; j++) 
-            {
-                boardStr[j + 153] = ' ';
-            }
-            break;
-        }
-        boardStr[i + 153] = board->wprison[i];
-    } boardStr[161] = '\0';// 153-160 is filled, 161 is nl
+        if(board->wprison[i + 8] == '\0') break;
+        boardStr[i + 153] = board->wprison[i + 8];
+    }
 
-    return boardStr;
+    // Print the final board string before returning
+    printf("%s\n", boardStr);
+
+    return boardStr;  // Ensure the caller frees this after use
 }
+
 
 
 exboard_t* apply_move(exboard_t* board, move_t* move) 
@@ -493,7 +434,30 @@ int validKnightKing(board_t *board, int to_i, int to_j, int colour)
 
 }
 
-move_t **knightmoves( board_t *board, int from_i, int from_j, int colour )
+move_t *make_move(int from_i, int from_j, int to_i, int to_j) 
+{
+    move_t *new_move = malloc(sizeof(move_t));
+    if (!new_move) return NULL;
+    new_move->from_i = from_i;
+    new_move->from_j = from_j;
+    new_move->to_i = to_i;
+    new_move->to_j = to_j;
+    new_move->promotion = ' ';
+    new_move->hostage = ' ';
+    return new_move;
+}
+
+int is_valid_move(char destination, int colour) 
+{
+    if (destination == ' ') return 1;  // Empty space is valid
+    if ((colour == 0 && isupper(destination)) || (colour == 1 && islower(destination))) 
+    {
+        return 0;  //Friendly piece encountered invalid move
+    }
+    return 2;  //Move is valid but destination is currently occupied by opposite colour
+}
+
+move_t **knightmoves( board_t *board, int from_i, int from_j, int colour)
 {
     int knightBaseMoves[8][2] = 
     {
@@ -511,16 +475,7 @@ move_t **knightmoves( board_t *board, int from_i, int from_j, int colour )
 
         if (validKnightKing(board, to_i, to_j, colour))
         {
-            move_t *nMove = malloc(sizeof(move_t));
-            nMove->from_i = from_i;
-            nMove->from_j = from_j;
-            nMove->to_i = to_i;
-            nMove->to_j = to_j;
-            nMove->promotion = ' ';
-            nMove->hostage = ' ';
-
-            moves[numOfMoves] = nMove;
-            numOfMoves++;
+            moves[numOfMoves++] = make_move(from_i, from_j, to_i, to_j);
         }
     }
 
@@ -531,339 +486,90 @@ move_t **knightmoves( board_t *board, int from_i, int from_j, int colour )
     return moves;
 }
 
-move_t *create_move(int from_i, int from_j, int to_i, int to_j) 
+void add_bishop_moves(move_t ***moves, board_t *board, int from_i, int from_j, int direction_i, int direction_j, int *numOfMoves, int colour) 
 {
-    move_t *new_move = malloc(sizeof(move_t));
-    if (!new_move) return NULL;
-    new_move->from_i = from_i;
-    new_move->from_j = from_j;
-    new_move->to_i = to_i;
-    new_move->to_j = to_j;
-    new_move->promotion = ' ';
-    new_move->hostage = ' ';
-    return new_move;
+    for (int to_i = from_i + direction_i, to_j = from_j + direction_j;
+         to_i >= 0 && to_i < 8 && to_j >= 0 && to_j < 8;
+         to_i += direction_i, to_j += direction_j) 
+         {
+        char destination = (*board)[to_i][to_j];
+        int valid = is_valid_move(destination, colour);
+
+        if (valid == 1) 
+        {  // Valid move to empty space
+            (*moves)[(*numOfMoves)++] = make_move(from_i, from_j, to_i, to_j);
+        } else if (valid == 2) 
+        {  // Valid move to capture enemy piece
+            (*moves)[(*numOfMoves)++] = make_move(from_i, from_j, to_i, to_j);
+            break;  // Stop after capturing
+        } else 
+        {
+            break;  // Ran into friendly piece
+        }
+    }
 }
 
-int isValidMove(char destination, int colour)
+void add_rook_moves(move_t ***moves, board_t *board, int from_i, int from_j, int delta_i, int delta_j, int *numOfMoves, int colour) 
 {
-    return NULL;
+    for (int to_i = from_i + delta_i, to_j = from_j + delta_j;
+         to_i >= 0 && to_i < 8 && to_j >= 0 && to_j < 8;
+         to_i += delta_i, to_j += delta_j) 
+    {
+        char destination = (*board)[to_i][to_j];
+        int valid = is_valid_move(destination, colour);
+
+        if (valid == 1) 
+        {  
+            (*moves)[(*numOfMoves)++] = make_move(from_i, from_j, to_i, to_j);
+        } 
+        else if (valid == 2) 
+        {  
+            (*moves)[(*numOfMoves)++] = make_move(from_i, from_j, to_i, to_j);
+            break;  // Stop after capturing an enemy piece
+        } 
+        else 
+        {
+            break;  // Ran into a friendly piece
+        }
+    }
 }
 
-
-
-move_t **bishopmoves(board_t *board, int from_i, int from_j, int colour)
-{
-    move_t **moves = malloc(16 * sizeof(move_t *)); // Allocate max possible moves + NULL pointer
+move_t **bishopmoves(board_t *board, int from_i, int from_j, int colour) {
+    move_t **moves = malloc(16 * sizeof(move_t *)); // Allocate max possible moves.
     int numOfMoves = 0;
 
-    //Move up and left  (-1, -1)
-    for (int to_i = from_i - 1, to_j = from_j - 1; to_i >= 0 && to_j >= 0; to_i--, to_j--)
-    {
-        char destination = (*board)[to_i][to_j];
-        if (destination == ' ') //Move to empty space
-        {
-            move_t *bMove = malloc(sizeof(move_t));
-            bMove->from_i = from_i;
-            bMove->from_j = from_j;
-            bMove->to_i = to_i;
-            bMove->to_j = to_j;
-            bMove->promotion = ' ';
-            bMove->hostage = ' ';
-            moves[numOfMoves++] = bMove;
-        }
-        else //Run into a piece
-        {
-            if ((colour == 0 && isupper(destination)) || (colour == 1 && islower(destination)))
-            {
-                break; //Ran into friendly piece
-            }
-            else
-            {
-                move_t *bMove = malloc(sizeof(move_t));
-                bMove->from_i = from_i;
-                bMove->from_j = from_j;
-                bMove->to_i = to_i;
-                bMove->to_j = to_j;
-                bMove->promotion = ' ';
-                bMove->hostage = ' ';
-                moves[numOfMoves++] = bMove;
-                break;
-            }
-        }
-    }
+    // Add moves for each diagonal direction.
+    add_bishop_moves(&moves, board, from_i, from_j, -1, -1, &numOfMoves, colour);  // Up-left
+    add_bishop_moves(&moves, board, from_i, from_j, -1, +1, &numOfMoves, colour);  // Up-right
+    add_bishop_moves(&moves, board, from_i, from_j, +1, -1, &numOfMoves, colour);  // Down-left
+    add_bishop_moves(&moves, board, from_i, from_j, +1, +1, &numOfMoves, colour);  // Down-right
 
-    //Move up and right  (-1, +1)
-    for (int to_i = from_i - 1, to_j = from_j + 1; to_i >= 0 && to_j < 8; to_i--, to_j++)
-    {
-        char destination = (*board)[to_i][to_j];
-        if (destination == ' ') //Move to empty space
-        {
-            move_t *bMove = malloc(sizeof(move_t));
-            bMove->from_i = from_i;
-            bMove->from_j = from_j;
-            bMove->to_i = to_i;
-            bMove->to_j = to_j;
-            bMove->promotion = ' ';
-            bMove->hostage = ' ';
-            moves[numOfMoves++] = bMove;
-        }
-        else //Run into a piece
-        {
-            if ((colour == 0 && isupper(destination)) || (colour == 1 && islower(destination)))
-            {
-                break; //Ran into friendly piece
-            }
-            else
-            {
-                move_t *bMove = malloc(sizeof(move_t));
-                bMove->from_i = from_i;
-                bMove->from_j = from_j;
-                bMove->to_i = to_i;
-                bMove->to_j = to_j;
-                bMove->promotion = ' ';
-                bMove->hostage = ' ';
-                moves[numOfMoves++] = bMove;
-                break;
-            }
-        }
-    }
-
-    //Move down and left  (+1, -1)
-    for (int to_i = from_i + 1, to_j = from_j - 1; to_i < 8 && to_j >= 0; to_i++, to_j--)
-    {
-        char destination = (*board)[to_i][to_j];
-        if (destination == ' ') //Move to empty space
-        {
-            move_t *bMove = malloc(sizeof(move_t));
-            bMove->from_i = from_i;
-            bMove->from_j = from_j;
-            bMove->to_i = to_i;
-            bMove->to_j = to_j;
-            bMove->promotion = ' ';
-            bMove->hostage = ' ';
-            moves[numOfMoves++] = bMove;
-        }
-        else //Run into a piece
-        {
-            if ((colour == 0 && isupper(destination)) || (colour == 1 && islower(destination)))
-            {
-                break; //Ran into friendly piece
-            }
-            else
-            {
-                move_t *bMove = malloc(sizeof(move_t));
-                bMove->from_i = from_i;
-                bMove->from_j = from_j;
-                bMove->to_i = to_i;
-                bMove->to_j = to_j;
-                bMove->promotion = ' ';
-                bMove->hostage = ' ';
-                moves[numOfMoves++] = bMove;
-                break;
-            }
-        }
-    }
-    
-    ////Move down and right  (+1, +1)
-    for (int to_i = from_i + 1, to_j = from_j + 1; to_i < 8 && to_j < 8; to_i++, to_j++)
-    {
-        char destination = (*board)[to_i][to_j];
-        if (destination == ' ') //Move to empty space
-        {
-            move_t *bMove = malloc(sizeof(move_t));
-            bMove->from_i = from_i;
-            bMove->from_j = from_j;
-            bMove->to_i = to_i;
-            bMove->to_j = to_j;
-            bMove->promotion = ' ';
-            bMove->hostage = ' ';
-            moves[numOfMoves++] = bMove;
-        }
-        else //Run into a piece
-        {
-            if ((colour == 0 && isupper(destination)) || (colour == 1 && islower(destination)))
-            {
-                break; //Ran into friendly piece
-            }
-            else
-            {
-                move_t *bMove = malloc(sizeof(move_t));
-                bMove->from_i = from_i;
-                bMove->from_j = from_j;
-                bMove->to_i = to_i;
-                bMove->to_j = to_j;
-                bMove->promotion = ' ';
-                bMove->hostage = ' ';
-                moves[numOfMoves++] = bMove;
-                break;
-            }
-        }
-    }
-
-    //Realloc to exact amount needed with NULL at the end
+    // Realloc to exact amount needed with NULL at the end.
     moves = realloc(moves, (numOfMoves + 1) * sizeof(move_t *));
     moves[numOfMoves] = NULL;
 
     return moves;
 }
+
 
 move_t **rookmoves(board_t *board, int from_i, int from_j, int colour)
 {
     move_t **moves = malloc(16 * sizeof(move_t *)); // Allocate max possible moves + NULL pointer
     int numOfMoves = 0;
 
-    //Move up
-    for (int to_i = from_i - 1; to_i >= 0 ; to_i--)
-    {
-        char destination = (*board)[to_i][from_j];
-        if (destination == ' ') //Move to empty space
-        {
-            move_t *rMove = malloc(sizeof(move_t));
-            rMove->from_i = from_i;
-            rMove->from_j = from_j;
-            rMove->to_i = to_i;
-            rMove->to_j = from_j;
-            rMove->promotion = ' ';
-            rMove->hostage = ' ';
-            moves[numOfMoves++] = rMove;
+    // Add moves in all four directions (up, down, left, right)
+    add_rook_moves(&moves, board, from_i, from_j, -1, 0, &numOfMoves, colour);  // Up
+    add_rook_moves(&moves, board, from_i, from_j, 1, 0, &numOfMoves, colour);   // Down
+    add_rook_moves(&moves, board, from_i, from_j, 0, -1, &numOfMoves, colour);  // Left
+    add_rook_moves(&moves, board, from_i, from_j, 0, 1, &numOfMoves, colour);   // Right
 
-        }
-        else //Run into a piece
-        {
-
-            if ((colour == 0 && isupper(destination)) || (colour == 1 && islower(destination)))
-            {
-                break; //Ran into friendly piece
-            }
-            else
-            {
-                move_t *rMove = malloc(sizeof(move_t));
-                rMove->from_i = from_i;
-                rMove->from_j = from_j;
-                rMove->to_i = to_i;
-                rMove->to_j = from_j;
-                rMove->promotion = ' ';
-                rMove->hostage = ' ';
-                moves[numOfMoves++] = rMove;
-                break;
-            }
-        }
-    }
-
-    //Move left
-    for (int to_j = from_j - 1;to_j >= 0;to_j--)
-    {
-        char destination = (*board)[from_i][to_j];
-        if (destination == ' ') //Move to empty space
-        {
-            move_t *rMove = malloc(sizeof(move_t));
-            rMove->from_i = from_i;
-            rMove->from_j = from_j;
-            rMove->to_i = from_i;
-            rMove->to_j = to_j;
-            rMove->promotion = ' ';
-            rMove->hostage = ' ';
-            moves[numOfMoves++] = rMove;
-        }
-        else //Run into a piece
-        {
-            if ((colour == 0 && isupper(destination)) || (colour == 1 && islower(destination)))
-            {
-                break; //Ran into friendly piece
-            }
-            else
-            {
-                move_t *rMove = malloc(sizeof(move_t));
-                rMove->from_i = from_i;
-                rMove->from_j = from_j;
-                rMove->to_i = from_i;
-                rMove->to_j = to_j;
-                rMove->promotion = ' ';
-                rMove->hostage = ' ';
-                moves[numOfMoves++] = rMove;
-                break;
-            }
-        }
-    }
-
-    //Move down
-    for (int to_i = from_i + 1;to_i < 8; to_i++)
-    {
-        char destination = (*board)[to_i][from_j];
-        if (destination == ' ') //Move to empty space
-        {
-            move_t *rMove = malloc(sizeof(move_t));
-            rMove->from_i = from_i;
-            rMove->from_j = from_j;
-            rMove->to_i = to_i;
-            rMove->to_j = from_j;
-            rMove->promotion = ' ';
-            rMove->hostage = ' ';
-            moves[numOfMoves++] = rMove;
-        }
-        else //Run into a piece
-        {
-            if ((colour == 0 && isupper(destination)) || (colour == 1 && islower(destination)))
-            {
-                break; //Ran into friendly piece
-            }
-            else
-            {
-                move_t *rMove = malloc(sizeof(move_t));
-                rMove->from_i = from_i;
-                rMove->from_j = from_j;
-                rMove->to_i = to_i;
-                rMove->to_j = from_j;
-                rMove->promotion = ' ';
-                rMove->hostage = ' ';
-                moves[numOfMoves++] = rMove;
-                break;
-            }
-        }
-    }
-
-    ////Move right 
-    for (int to_j = from_j + 1;to_j < 8;to_j++)
-    {
-        char destination = (*board)[from_i][to_j];
-        if (destination == ' ') //Move to empty space
-        {
-            move_t *rMove = malloc(sizeof(move_t));
-            rMove->from_i = from_i;
-            rMove->from_j = from_j;
-            rMove->to_i = from_i;
-            rMove->to_j = to_j;
-            rMove->promotion = ' ';
-            rMove->hostage = ' ';
-            moves[numOfMoves++] = rMove;
-        }
-        else //Run into a piece
-        {
-            if ((colour == 0 && isupper(destination)) || (colour == 1 && islower(destination)))
-            {
-                break; //Ran into friendly piece
-            }
-            else
-            {
-                move_t *rMove = malloc(sizeof(move_t));
-                rMove->from_i = from_i;
-                rMove->from_j = from_j;
-                rMove->to_i = from_i;
-                rMove->to_j = to_j;
-                rMove->promotion = ' ';
-                rMove->hostage = ' ';
-                moves[numOfMoves++] = rMove;
-                break;
-            }
-        }
-    }
-
-    //Realloc to exact amount needed with NULL at the end
+    // Realloc to exact amount needed with NULL at the end
     moves = realloc(moves, (numOfMoves + 1) * sizeof(move_t *));
     moves[numOfMoves] = NULL;
 
     return moves;
 }
+
 
 move_t **queenmoves(board_t *board, int from_i, int from_j, int colour)
 {
@@ -911,16 +617,7 @@ move_t **king_moves(board_t *board, int from_i, int from_j, int colour)
 
         if (validKnightKing(board, to_i, to_j, colour))
         {
-            move_t *kMove = malloc(sizeof(move_t));
-            kMove->from_i = from_i;
-            kMove->from_j = from_j;
-            kMove->to_i = to_i;
-            kMove->to_j = to_j;
-            kMove->promotion = ' ';
-            kMove->hostage = ' ';
-
-            moves[numOfMoves] = kMove;
-            numOfMoves++;
+            moves[numOfMoves++] = make_move(from_i, from_j, to_i, to_j);
         }
     }
 
@@ -948,30 +645,17 @@ move_t **pawn_moves(board_t *board, int from_i, int from_j, int colour)
     }
 
     // Check if pawn can move forward 1 square
-    if (board->board[from_i + path][from_j] == ' ') 
+  
+    if ((*board)[from_i + path][from_j] == ' ') 
     {
-        move_t *pMove = malloc(sizeof(move_t));
-        pMove->from_i = from_i;
-        pMove->from_j = from_j;
-        pMove->to_i = from_i + path;
-        pMove->to_j = from_j;
-        pMove->promotion = ' ';
-        pMove->hostage = ' ';
-        moves[numOfMoves++] = pMove;
+        moves[numOfMoves++] = make_move(from_i, from_j, from_i + path, from_j);
 
         // Check if pawn can move forward 2 squares (only if it is on starting rank)
         if ((colour == 0 && from_i == 1) || (colour == 1 && from_i == 6)) 
         {
-            if (board->board[from_i + 2 * path][from_j] == ' ') 
+            if ((*board)[from_i + 2 * path][from_j] == ' ') 
             {
-                move_t *pMove2 = malloc(sizeof(move_t));
-                pMove2->from_i = from_i;
-                pMove2->from_j = from_j;
-                pMove2->to_i = from_i + 2 * path;
-                pMove2->to_j = from_j;
-                pMove2->promotion = ' ';
-                pMove2->hostage = ' ';
-                moves[numOfMoves++] = pMove2;
+                moves[numOfMoves++] = make_move(from_i, from_j, from_i + 2 * path, from_j);
             }
         }
     }
@@ -979,34 +663,20 @@ move_t **pawn_moves(board_t *board, int from_i, int from_j, int colour)
     // Check if pawn can capture diagonally (left)
     if (from_j - 1 >= 0) 
     {
-        char captureLeft = board->board[from_i + path][from_j - 1];
+        char captureLeft = (*board)[from_i + path][from_j - 1];
         if ((colour == 0 && islower(captureLeft)) || (colour == 1 && isupper(captureLeft))) 
         {
-            move_t *pMove = malloc(sizeof(move_t));
-            pMove->from_i = from_i;
-            pMove->from_j = from_j;
-            pMove->to_i = from_i + path;
-            pMove->to_j = from_j - 1;
-            pMove->promotion = ' ';
-            pMove->hostage = ' ';
-            moves[numOfMoves++] = pMove;
+            moves[numOfMoves++] = make_move(from_i, from_j, from_i + path, from_j - 1);
         }
     }
 
     // Check if pawn can capture diagonally (right)
     if (from_j + 1 < 8) 
     {
-        char captureRight = board->board[from_i + path][from_j + 1];
+        char captureRight =(*board)[from_i + path][from_j + 1];
         if ((colour == 0 && islower(captureRight)) || (colour == 1 && isupper(captureRight))) 
         {
-            move_t *pMove = malloc(sizeof(move_t));
-            pMove->from_i = from_i;
-            pMove->from_j = from_j;
-            pMove->to_i = from_i + path;
-            pMove->to_j = from_j + 1;
-            pMove->promotion = ' ';
-            pMove->hostage = ' ';
-            moves[numOfMoves++] = pMove;
+            moves[numOfMoves++] = make_move(from_i, from_j, from_i + path, from_j - 1);
         }
     }
 
