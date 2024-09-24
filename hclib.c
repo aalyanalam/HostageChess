@@ -467,7 +467,7 @@ move_t **moves(board_t *board, int from_i, int from_j)
     return NULL;
 }
 
-int validKnight(board_t *board, int to_i, int to_j, int colour)
+int validKnightKing(board_t *board, int to_i, int to_j, int colour)
 {
     if (to_i < 0 || to_i >= 8 || to_j < 0 || to_j >= 8)
     {
@@ -509,7 +509,7 @@ move_t **knightmoves( board_t *board, int from_i, int from_j, int colour )
         int to_i = from_i + knightBaseMoves[i][0];
         int to_j = from_j + knightBaseMoves[i][1];
 
-        if (validKnight(board, to_i, to_j, colour))
+        if (validKnightKing(board, to_i, to_j, colour))
         {
             move_t *nMove = malloc(sizeof(move_t));
             nMove->from_i = from_i;
@@ -531,9 +531,29 @@ move_t **knightmoves( board_t *board, int from_i, int from_j, int colour )
     return moves;
 }
 
+move_t *create_move(int from_i, int from_j, int to_i, int to_j) 
+{
+    move_t *new_move = malloc(sizeof(move_t));
+    if (!new_move) return NULL;
+    new_move->from_i = from_i;
+    new_move->from_j = from_j;
+    new_move->to_i = to_i;
+    new_move->to_j = to_j;
+    new_move->promotion = ' ';
+    new_move->hostage = ' ';
+    return new_move;
+}
+
+int isValidMove(char destination, int colour)
+{
+    return NULL;
+}
+
+
+
 move_t **bishopmoves(board_t *board, int from_i, int from_j, int colour)
 {
-    move_t **moves = malloc(15 * sizeof(move_t *)); // Allocate max possible moves + NULL pointer
+    move_t **moves = malloc(16 * sizeof(move_t *)); // Allocate max possible moves + NULL pointer
     int numOfMoves = 0;
 
     //Move up and left  (-1, -1)
@@ -689,7 +709,7 @@ move_t **bishopmoves(board_t *board, int from_i, int from_j, int colour)
 
 move_t **rookmoves(board_t *board, int from_i, int from_j, int colour)
 {
-    move_t **moves = malloc(15 * sizeof(move_t *)); // Allocate max possible moves + NULL pointer
+    move_t **moves = malloc(16 * sizeof(move_t *)); // Allocate max possible moves + NULL pointer
     int numOfMoves = 0;
 
     //Move up
@@ -847,15 +867,154 @@ move_t **rookmoves(board_t *board, int from_i, int from_j, int colour)
 
 move_t **queenmoves(board_t *board, int from_i, int from_j, int colour)
 {
-    return NULL;
+    move_t **moves = malloc(28 * sizeof(move_t *)); // Allocate max possible moves + NULL pointer
+    int numOfMoves = 0;
+
+    move_t **rookMoves = rookmoves(board, from_i, from_j, colour); // Get rook moves
+    // Add rook moves to queen's moves list
+    for (int i = 0; rookMoves[i] != NULL; i++) 
+    {
+        moves[numOfMoves++] = rookMoves[i];  //Add pointers to queen's moves
+    }
+    free(rookMoves);  // Free temporary array holding rook moves
+
+    move_t **bishopMoves = bishopmoves(board, from_i, from_j, colour); // Get bishop moves
+    // Append bishop moves to queen's moves list
+    for (int i = 0; bishopMoves[i] != NULL; i++) 
+    {
+        moves[numOfMoves++] = bishopMoves[i];  //Add pointers to queen's moves
+    }
+    free(bishopMoves);  // Free temporary array holding bishop moves
+
+    //Realloc to exact amount needed with NULL at the end
+    moves = realloc(moves, (numOfMoves + 1) * sizeof(move_t *));
+    moves[numOfMoves] = NULL;
+
+    return moves;
 }
 
 move_t **king_moves(board_t *board, int from_i, int from_j, int colour)
 {
-    return NULL;
+    int kingBaseMoves[8][2] = 
+    {
+        {1, -1}, {1, 0}, {1, 1}, {0, -1},
+        {-1, -1}, {-1, 0}, {-1, 1}, {0, 1}
+    };
+
+    move_t **moves = malloc(9 * sizeof(move_t *));
+    int numOfMoves = 0;
+
+    for (int i = 0; i < 8; i++)
+    {
+        int to_i = from_i + kingBaseMoves[i][0];
+        int to_j = from_j + kingBaseMoves[i][1];
+
+        if (validKnightKing(board, to_i, to_j, colour))
+        {
+            move_t *kMove = malloc(sizeof(move_t));
+            kMove->from_i = from_i;
+            kMove->from_j = from_j;
+            kMove->to_i = to_i;
+            kMove->to_j = to_j;
+            kMove->promotion = ' ';
+            kMove->hostage = ' ';
+
+            moves[numOfMoves] = kMove;
+            numOfMoves++;
+        }
+    }
+
+    //Realloc to exact amount needed with NULL at the end
+    moves = realloc(moves, (numOfMoves + 1) * sizeof(move_t *));
+    moves[numOfMoves] = NULL;
+
+    return moves;   
 }
 
 move_t **pawn_moves(board_t *board, int from_i, int from_j, int colour)
 {
-    return NULL;
+    move_t **moves = malloc(5 * sizeof(move_t *));
+    int numOfMoves = 0;
+    int path;
+
+    // Determine the movement path based on colour
+    if (colour == 0) 
+    {
+        path = 1;  // White pawns move down (increase i index)
+    }
+    else
+    {
+        path = -1;   // Black pawns move up (decrease i index)
+    }
+
+    // Check if pawn can move forward 1 square
+    if (board->board[from_i + path][from_j] == ' ') 
+    {
+        move_t *pMove = malloc(sizeof(move_t));
+        pMove->from_i = from_i;
+        pMove->from_j = from_j;
+        pMove->to_i = from_i + path;
+        pMove->to_j = from_j;
+        pMove->promotion = ' ';
+        pMove->hostage = ' ';
+        moves[numOfMoves++] = pMove;
+
+        // Check if pawn can move forward 2 squares (only if it is on starting rank)
+        if ((colour == 0 && from_i == 1) || (colour == 1 && from_i == 6)) 
+        {
+            if (board->board[from_i + 2 * path][from_j] == ' ') 
+            {
+                move_t *pMove2 = malloc(sizeof(move_t));
+                pMove2->from_i = from_i;
+                pMove2->from_j = from_j;
+                pMove2->to_i = from_i + 2 * path;
+                pMove2->to_j = from_j;
+                pMove2->promotion = ' ';
+                pMove2->hostage = ' ';
+                moves[numOfMoves++] = pMove2;
+            }
+        }
+    }
+
+    // Check if pawn can capture diagonally (left)
+    if (from_j - 1 >= 0) 
+    {
+        char captureLeft = board->board[from_i + path][from_j - 1];
+        if ((colour == 0 && islower(captureLeft)) || (colour == 1 && isupper(captureLeft))) 
+        {
+            move_t *pMove = malloc(sizeof(move_t));
+            pMove->from_i = from_i;
+            pMove->from_j = from_j;
+            pMove->to_i = from_i + path;
+            pMove->to_j = from_j - 1;
+            pMove->promotion = ' ';
+            pMove->hostage = ' ';
+            moves[numOfMoves++] = pMove;
+        }
+    }
+
+    // Check if pawn can capture diagonally (right)
+    if (from_j + 1 < 8) 
+    {
+        char captureRight = board->board[from_i + path][from_j + 1];
+        if ((colour == 0 && islower(captureRight)) || (colour == 1 && isupper(captureRight))) 
+        {
+            move_t *pMove = malloc(sizeof(move_t));
+            pMove->from_i = from_i;
+            pMove->from_j = from_j;
+            pMove->to_i = from_i + path;
+            pMove->to_j = from_j + 1;
+            pMove->promotion = ' ';
+            pMove->hostage = ' ';
+            moves[numOfMoves++] = pMove;
+        }
+    }
+
+    // Realloc to exact number of moves and add NULL at end
+    moves = realloc(moves, (numOfMoves + 1) * sizeof(move_t *));
+    moves[numOfMoves] = NULL;
+
+    return moves;
 }
+
+
