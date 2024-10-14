@@ -1,0 +1,22 @@
+ 1                       newboard  0
+ 2                      copyboard  0
+ 3                    stringboard  0
+ 4                          moves  1
+ 5                (k)nightmoves 1  1
+ 6                (k)nightmoves 2  1
+ 7                  bishopmoves 1  1
+ 8                  bishopmoves 2  1
+ 9                    rookmoves 1  1
+10                    rookmoves 2  1
+11                   queenmoves 1  1
+12                   queenmoves 2  1
+13                    kingmoves 1  0
+14                    kingmoves 2  0
+15                    pawnmoves 1  0
+16                    pawnmoves 2  0
+17                       makefile  1
+18            options in makefile  1
+19                       comments  1
+20                    indentation  1
+====================================
+Total:                         13/20
