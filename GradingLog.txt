@@ -3,7 +3,7 @@ Looking for files
    Found hclib.h
    Found makefile
 Compiling
-   export LD_LIBRARY_PATH=/home/socs/workdir/Grading/Repos/A1/aalyan; clang -std=c99 -Wall -pedantic -c hclib.c -fPIC -o hclib.o 1>> compile.out 2>> compile.err
+   export LD_LIBRARY_PATH=/home/socs/workdir/Grading/Repos/A1/aalyan; clang -std=c99 -Wall -pedantic -Dpawn_moves=pawnmoves -D king_moves=kingmoves -c hclib.c -fPIC -o hclib.o 1>> compile.out 2>> compile.err
    export LD_LIBRARY_PATH=/home/socs/workdir/Grading/Repos/A1/aalyan; clang -std=c99 -Wall -pedantic  hclib.o -shared -o libhclib.so 1>> compile.out 2>> compile.err
 Looking for targets
    Found libhclib.so
@@ -82,37 +82,37 @@ Running test03
            
 
 Valgrind found errors:
-  ==2156== Memcheck, a memory error detector
-  ==2156== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
-  ==2156== Using Valgrind-3.19.0 and LibVEX; rerun with -h for copyright info
-  ==2156== Command: ./test03
-  ==2156== 
-  ==2156== Conditional jump or move depends on uninitialised value(s)
-  ==2156==    at 0x4852574: stringboard (in /home/socs/workdir/Grading/Repos/A1/aalyan/libhclib.so)
-  ==2156==    by 0x1091E7: main (in /home/socs/workdir/Grading/Repos/A1/aalyan/test03)
-  ==2156== 
-  ==2156== Conditional jump or move depends on uninitialised value(s)
-  ==2156==    at 0x4852629: stringboard (in /home/socs/workdir/Grading/Repos/A1/aalyan/libhclib.so)
-  ==2156==    by 0x1091E7: main (in /home/socs/workdir/Grading/Repos/A1/aalyan/test03)
-  ==2156== 
-  ==2156== Conditional jump or move depends on uninitialised value(s)
-  ==2156==    at 0x4852834: stringboard (in /home/socs/workdir/Grading/Repos/A1/aalyan/libhclib.so)
-  ==2156==    by 0x1091E7: main (in /home/socs/workdir/Grading/Repos/A1/aalyan/test03)
-  ==2156== 
-  ==2156== Conditional jump or move depends on uninitialised value(s)
-  ==2156==    at 0x48528F0: stringboard (in /home/socs/workdir/Grading/Repos/A1/aalyan/libhclib.so)
-  ==2156==    by 0x1091E7: main (in /home/socs/workdir/Grading/Repos/A1/aalyan/test03)
-  ==2156== 
-  ==2156== 
-  ==2156== HEAP SUMMARY:
-  ==2156==     in use at exit: 0 bytes in 0 blocks
-  ==2156==   total heap usage: 3 allocs, 3 frees, 4,386 bytes allocated
-  ==2156== 
-  ==2156== All heap blocks were freed -- no leaks are possible
-  ==2156== 
-  ==2156== Use --track-origins=yes to see where uninitialised values come from
-  ==2156== For lists of detected and suppressed errors, rerun with: -s
-  ==2156== ERROR SUMMARY: 4 errors from 4 contexts (suppressed: 0 from 0)
+  ==14928== Memcheck, a memory error detector
+  ==14928== Copyright (C) 2002-2022, and GNU GPL'd, by Julian Seward et al.
+  ==14928== Using Valgrind-3.19.0 and LibVEX; rerun with -h for copyright info
+  ==14928== Command: ./test03
+  ==14928== 
+  ==14928== Conditional jump or move depends on uninitialised value(s)
+  ==14928==    at 0x4852574: stringboard (in /home/socs/workdir/Grading/Repos/A1/aalyan/libhclib.so)
+  ==14928==    by 0x1091E7: main (in /home/socs/workdir/Grading/Repos/A1/aalyan/test03)
+  ==14928== 
+  ==14928== Conditional jump or move depends on uninitialised value(s)
+  ==14928==    at 0x4852629: stringboard (in /home/socs/workdir/Grading/Repos/A1/aalyan/libhclib.so)
+  ==14928==    by 0x1091E7: main (in /home/socs/workdir/Grading/Repos/A1/aalyan/test03)
+  ==14928== 
+  ==14928== Conditional jump or move depends on uninitialised value(s)
+  ==14928==    at 0x4852834: stringboard (in /home/socs/workdir/Grading/Repos/A1/aalyan/libhclib.so)
+  ==14928==    by 0x1091E7: main (in /home/socs/workdir/Grading/Repos/A1/aalyan/test03)
+  ==14928== 
+  ==14928== Conditional jump or move depends on uninitialised value(s)
+  ==14928==    at 0x48528F0: stringboard (in /home/socs/workdir/Grading/Repos/A1/aalyan/libhclib.so)
+  ==14928==    by 0x1091E7: main (in /home/socs/workdir/Grading/Repos/A1/aalyan/test03)
+  ==14928== 
+  ==14928== 
+  ==14928== HEAP SUMMARY:
+  ==14928==     in use at exit: 0 bytes in 0 blocks
+  ==14928==   total heap usage: 3 allocs, 3 frees, 4,386 bytes allocated
+  ==14928== 
+  ==14928== All heap blocks were freed -- no leaks are possible
+  ==14928== 
+  ==14928== Use --track-origins=yes to see where uninitialised values come from
+  ==14928== For lists of detected and suppressed errors, rerun with: -s
+  ==14928== ERROR SUMMARY: 4 errors from 4 contexts (suppressed: 0 from 0)
    Fail!
 
 Test case 04 (moves)
@@ -190,62 +190,34 @@ Running test12
 Test case 13 (kingmoves 1)
 Compiling
    clang -std=c99 -Wall -pedantic /home/socs/workdir/Grading/TestSuites/A1/test13.c /home/socs/workdir/Grading/TestSuites/A1/skhclib.o -L. -lhclib -o test13 1>> compile.out 2>> compile.err
-   Missing test13
-   Compilation generated errors:
-   /usr/bin/ld: /tmp/test13-37e00e.o: in function `main':
-test13.c:(.text+0x57): undefined reference to `kingmoves'
-clang: error: linker command failed with exit code 1 (use -v to see invocation)
-
+   Found test13
+   Compilation succeeded
 Running test13
-   Run generated errors:
-   timeout: failed to run command ‘./test13’: No such file or directory
-
-   Fail!
+   Pass!
 
 Test case 14 (kingmoves 2)
 Compiling
    clang -std=c99 -Wall -pedantic /home/socs/workdir/Grading/TestSuites/A1/test14.c /home/socs/workdir/Grading/TestSuites/A1/skhclib.o -L. -lhclib -o test14 1>> compile.out 2>> compile.err
-   Missing test14
-   Compilation generated errors:
-   /usr/bin/ld: /tmp/test14-a941ea.o: in function `main':
-test14.c:(.text+0x67): undefined reference to `kingmoves'
-clang: error: linker command failed with exit code 1 (use -v to see invocation)
-
+   Found test14
+   Compilation succeeded
 Running test14
-   Run generated errors:
-   timeout: failed to run command ‘./test14’: No such file or directory
-
-   Fail!
+   Pass!
 
 Test case 15 (pawnmoves 1)
 Compiling
    clang -std=c99 -Wall -pedantic /home/socs/workdir/Grading/TestSuites/A1/test15.c /home/socs/workdir/Grading/TestSuites/A1/skhclib.o -L. -lhclib -o test15 1>> compile.out 2>> compile.err
-   Missing test15
-   Compilation generated errors:
-   /usr/bin/ld: /tmp/test15-036d95.o: in function `main':
-test15.c:(.text+0x37): undefined reference to `pawnmoves'
-clang: error: linker command failed with exit code 1 (use -v to see invocation)
-
+   Found test15
+   Compilation succeeded
 Running test15
-   Run generated errors:
-   timeout: failed to run command ‘./test15’: No such file or directory
-
-   Fail!
+   Pass!
 
 Test case 16 (pawnmoves 2)
 Compiling
    clang -std=c99 -Wall -pedantic /home/socs/workdir/Grading/TestSuites/A1/test16.c /home/socs/workdir/Grading/TestSuites/A1/skhclib.o -L. -lhclib -o test16 1>> compile.out 2>> compile.err
-   Missing test16
-   Compilation generated errors:
-   /usr/bin/ld: /tmp/test16-1d61f6.o: in function `main':
-test16.c:(.text+0x51): undefined reference to `pawnmoves'
-clang: error: linker command failed with exit code 1 (use -v to see invocation)
-
+   Found test16
+   Compilation succeeded
 Running test16
-   Run generated errors:
-   timeout: failed to run command ‘./test16’: No such file or directory
-
-   Fail!
+   Pass!
 
 Found makefile
 Correct options
