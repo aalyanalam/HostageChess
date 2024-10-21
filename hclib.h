@@ -33,6 +33,10 @@ exboard_t* copyboard(exboard_t* board);
 //Make string version of board
 char* stringboard(exboard_t* board);
 
+exboard_t *boardstring(char *boardStr);
+
+char *fen(exboard_t *board, char *active, char *castling, char *enpassant, int half, int full);
+
 //Apply a move to the board (returns pointer to updated board)
 exboard_t* apply_move(exboard_t* board, move_t* move);
 

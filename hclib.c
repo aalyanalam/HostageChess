@@ -161,6 +161,142 @@ char* stringboard(exboard_t* board)
     return boardStr;  // Ensure the caller frees this after use
 }
 
+
+exboard_t* boardstring(char *boardStr) 
+{
+    if (boardStr == NULL) 
+    {
+        return NULL;
+    }
+
+    exboard_t *board = (exboard_t *)malloc(sizeof(exboard_t));
+    if (board == NULL) 
+    {
+        return NULL; // malloc failed
+    }
+
+    // Initialize board fields to empty
+    memset(board, 0, sizeof(exboard_t));
+
+    // Black piece prison (indices 0-7 and 9-15 in the string)
+    for (int i = 0; i <= 7; i++) {
+        if (boardStr[i] == ' ') break;  // Stop at space
+        board->bprison[i] = boardStr[i];
+    }
+    for (int i = 9; i <= 15; i++) {
+        if (boardStr[i + 1] == ' ') break;  // Stop at space
+        board->bprison[i - 1] = boardStr[i + 1];
+    }
+
+    // Black piece airfield (indices 18-25 and 27-34 in the string)
+    for (int i = 0; i <= 7; i++) {
+        if (boardStr[i + 18] == ' ') break;  // Stop at space
+        board->bairfield[i] = boardStr[i + 18];
+    }
+    for (int i = 0; i <= 7; i++) {
+        if (boardStr[i + 27] == ' ') break;  // Stop at space
+        board->bairfield[i + 8] = boardStr[i + 27];
+    }
+
+    // Reconstruct the board (starting at index 45)
+    for (int i = 0; i <= 7; i++) 
+    {
+        // Rank 7 (index 45) to Rank 0 (index 108)
+        for (int file = 0; file < 8; file++) 
+        {
+            board->board[7 - i][file] = boardStr[45 + i * 9 + file];  // Each row is separated by a newline (9 chars total)
+        }
+    }
+
+    // White piece airfield (indices 126-133 and 135-142 in the string)
+    for (int i = 0; i <= 7; i++) {
+        if (boardStr[i + 126] == ' ') break;  // Stop at space
+        board->wairfield[i] = boardStr[i + 126];
+    }
+    for (int i = 0; i <= 7; i++) {
+        if (boardStr[i + 135] == ' ') break;  // Stop at space
+        board->wairfield[i + 8] = boardStr[i + 135];
+    }
+
+    // White piece prison (indices 144-151 and 153-160 in the string)
+    for (int i = 0; i <= 7; i++) {
+        if (boardStr[i + 144] == ' ') break;  // Stop at space
+        board->wprison[i] = boardStr[i + 144];
+    }
+    for (int i = 0; i <= 7; i++) {
+        if (boardStr[i + 153] == ' ') break;  // Stop at space
+        board->wprison[i + 8] = boardStr[i + 153];
+    }
+
+    return board;  // Ensure the caller frees this after use
+}
+
+
+char *fen(exboard_t *board, char *active, char *castling, char *enpassant, int half, int full) 
+{
+    if (board == NULL || active == NULL || castling == NULL || enpassant == NULL) 
+    {
+        return NULL;
+    }
+
+    char fenBoard[72];  //Maxpossible size for the board part of FEN (with slashes and digits)
+    int fenIndex = 0;
+
+    //Convert the board to FEN
+    for (int rank = 7; rank >= 0; rank--) 
+    {
+        int emptyCount = 0;
+        for (int file = 0; file < 8; file++) 
+        {
+            char piece = board->board[rank][file];
+            if (piece == ' ') 
+            {
+                emptyCount++;
+            } 
+            else 
+            {
+                if (emptyCount > 0) 
+                {
+                    fenBoard[fenIndex++] = '0' + emptyCount;  //Convert count of empty squares to number
+                    emptyCount = 0;
+                }
+                fenBoard[fenIndex++] = piece;  //Place the piece character
+            }
+        }
+        if (emptyCount > 0) 
+        {
+            fenBoard[fenIndex++] = '0' + emptyCount;  //Add trailing empty squares if needed
+        }
+        if (rank > 0) 
+        {
+            fenBoard[fenIndex++] = '/';  //Add row separator except for last row
+        }
+    }
+    fenBoard[fenIndex] = '\0';  // Null-terminate the board part
+
+    //Calculate required size for the full FEN string
+    int totalLength = strlen(fenBoard) + 1  // Board part + space
+                      + strlen(active) + 1  // Active player + space
+                      + strlen(castling) + 1  // Castling rights + space
+                      + strlen(enpassant) + 1  // En passant + space
+                      + snprintf(NULL, 0, "%d", half) + 1  // Halfmove clock + space
+                      + snprintf(NULL, 0, "%d", full) + 1;  // Fullmove number + null terminator
+
+    // Allocate memory for the final FEN string
+    char *fenStr = (char *)malloc(totalLength);
+    if (fenStr == NULL) 
+    {
+        return NULL;  // malloc failed
+    }
+
+    // Construct final FEN string
+    snprintf(fenStr, totalLength, "%s %s %s %s %d %d", fenBoard, active, castling, enpassant, half, full);
+
+    return fenStr;
+}
+
+
+
 exboard_t* apply_move(exboard_t* board, move_t* move) 
 {
     if (board == NULL || move == NULL) 
