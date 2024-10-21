@@ -9,12 +9,10 @@ exboard_t* newboard()
     exboard_t *board = (exboard_t *)malloc(sizeof(exboard_t));
     if (board == NULL) 
     {
-        printf("newboard: FAILED (malloc failed)\n");
         return NULL; // malloc failed
     }
 
     // Make initial board
-    printf("newboard: Initializing board setup...\n");
 
     // White pieces ranks 1 and 2
     memcpy(board->board[0], "RNBQKBNR", 8);  // Use memcpy to copy exactly 8 characters
@@ -41,7 +39,6 @@ exboard_t* newboard()
     board->bairfield[0] = '\0';
     board->wairfield[0] = '\0';
 
-    printf("newboard: Board initialization complete.\n");
     return board;
 }
 
@@ -51,21 +48,18 @@ exboard_t* copyboard(exboard_t* board)
 {
     if (board == NULL) 
     {
-        printf("copyboard: FAILED (input board is NULL)\n");
         return NULL;
     }
 
     exboard_t *newBoard = (exboard_t *)malloc(sizeof(exboard_t));
     if (newBoard == NULL) 
     {
-        printf("copyboard: FAILED (malloc failed)\n");
         return NULL;
     }
 
     // Copy existing board to new one
     memcpy(newBoard, board, sizeof(exboard_t));
 
-    printf("copyboard: Board copied successfully.\n");
     return newBoard;
 }
 
@@ -73,14 +67,12 @@ char* stringboard(exboard_t* board)
 {
     if (board == NULL) 
     {
-        printf("stringboard: FAILED (board is NULL)\n");
         return NULL;
     }
 
     char *boardStr = malloc(sizeof(char) *162);
     if (boardStr == NULL) 
     {
-        printf("stringboard: FAILED (malloc failed)\n");
         return NULL;
     }
 
@@ -92,7 +84,6 @@ char* stringboard(exboard_t* board)
     }
     boardStr[161] = '\0';  // Null terminator
 
-    printf("stringboard: Converting board to string...\n");
 
     // Black piece prison
     for(int i = 0; i <= 7; i++) 
@@ -167,13 +158,8 @@ char* stringboard(exboard_t* board)
         boardStr[i + 153] = board->wprison[i + 8];
     }
 
-    // Print the final board string before returning
-    printf("%s\n", boardStr);
-
     return boardStr;  // Ensure the caller frees this after use
 }
-
-
 
 exboard_t* apply_move(exboard_t* board, move_t* move) 
 {
