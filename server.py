@@ -124,11 +124,17 @@ class MyHandler(BaseHTTPRequestHandler):
 
                     <!-- wtime -->
                     <label for="wtime">White Time (seconds):</label><br>
-                    <input type="number" id="wtime" name="wtime" min="0" placeholder="300" required><br><br>
+                    <div style="display: flex; align-items: center;">
+                        <input type="number" id="wtime" name="wtime" min="0" placeholder="300" required>
+                        <span style="margin-left: 5px;">s</span>
+                    </div><br>
 
                     <!-- btime -->
                     <label for="btime">Black Time (seconds):</label><br>
-                    <input type="number" id="btime" name="btime" min="0" placeholder="300" required><br><br>
+                    <div style="display: flex; align-items: center;">
+                        <input type="number" id="btime" name="btime" min="0" placeholder="300" required>
+                        <span style="margin-left: 5px;">s</span>
+                    </div><br>
 
                     <!-- submit button -->
                     <input type="submit" value="Submit">
@@ -162,102 +168,113 @@ class MyHandler(BaseHTTPRequestHandler):
                 self.wfile.write(b"<html><body><h1>Error: Invalid time values</h1></body></html>")
                 return
 
+            # Read the board from the form data or uploaded file
             if 'stringboard.txt' in form:
-                uploaded_file = form['stringboard.txt']
-                if uploaded_file.file:
-                    stringboard_data = uploaded_file.file.read().decode('utf-8')
-                    board = hclib.boardstring(stringboard_data)
-                    fen_string = hclib.fen(board, turn, 'KQkq', '-', wtime, btime)
+                if form['stringboard.txt'].filename:
+                    # Initial file upload handling
+                    uploaded_file = form['stringboard.txt']
+                    theBoard = uploaded_file.file.read().decode('utf-8')
+                    newBoard = hclib.boardstring(theBoard)
+                    fen_string = hclib.fen(newBoard, turn, 'KQkq', '-', wtime, btime)
+                else:
+                    # Handle subsequent form submissions
+                    fen_string = form.getvalue('stringboard.txt')
+            else:
+                self.send_response(400)
+                self.end_headers()
+                self.wfile.write(b"<html><body><h1>Error: No board data received</h1></body></html>")
+                return
 
-                    def format_time(seconds):
-                        minutes = seconds // 60
-                        sec = seconds % 60
-                        return f"{minutes}:{sec:02}"
+            # Helper function to format time
+            def format_time(seconds):
+                minutes = seconds // 60
+                sec = seconds % 60
+                return f"{minutes}:{sec:02}"
 
-                    formatted_wtime = format_time(wtime)
-                    formatted_btime = format_time(btime)
-                    next_turn = 'b' if turn == 'w' else 'w'
+            formatted_wtime = format_time(wtime)
+            formatted_btime = format_time(btime)
+            next_turn = 'b' if turn == 'w' else 'w'
 
-                    # Generate the HTML with JavaScript for the countdown timer
-                    nice_html = f"""
-                    <!DOCTYPE html>
-                    <html lang="en">
-                    <head>
-                        <meta charset="UTF-8">
-                        <title>Chessboard with Timers</title>
-                        <link rel="stylesheet" href="/css/chessboard-1.0.0.css">
-                        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-                        <script src="/js/chessboard-1.0.0.js"></script>
-                    </head>
-                    <body>
-                        <h1>Chessboard</h1>
-                        <div id="myBoard" style="width: 400px;"></div>
-                        <script>
-                            var board = Chessboard('myBoard', {{
-                                position: '{fen_string}',
-                                draggable: true
-                            }});
-                        </script>
+            # Generate the HTML response directly in do_POST
+            nice_html = f"""
+            <!DOCTYPE html>
+            <html lang="en">
+            <head>
+                <meta charset="UTF-8">
+                <title>Chessboard with Timers</title>
+                <link rel="stylesheet" href="/css/chessboard-1.0.0.css">
+                <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+                <script src="/js/chessboard-1.0.0.js"></script>
+            </head>
+            <body>
+                <h1>Chessboard</h1>
+                <div id="myBoard" style="width: 400px;"></div>
+                <script>
+                    var board = Chessboard('myBoard', {{
+                        position: '{fen_string}',
+                        draggable: true
+                    }});
 
-                        <!-- Timer display and "Done" button -->
-                        <div style="margin-top: 20px; display: flex; justify-content: flex-start; align-items: center; gap: 10px; width: 400px;">
-                            <span id="white-timer">White: {formatted_wtime}</span>
+                    function onFormSubmit() {{
+                        var newFen = board.fen();
+                        document.getElementById('board').value = newFen;
+                        return true;
+                    }}
+                </script>
 
-                            <!-- Form for submitting the move -->
-                            <form id="doneForm" action="/board.html" method="post" style="display: inline;">
-                                <input type="hidden" name="turn" value="{next_turn}">
-                                <input type="hidden" id="wtime" name="wtime" value="{wtime}">
-                                <input type="hidden" id="btime" name="btime" value="{btime}">
-                                <input type="hidden" name="stringboard.txt" value="{stringboard_data}">
-                                <button type="submit" style="margin: 0 10px;">Done</button>
-                            </form>
+                <!-- Timer display and "Done" button -->
+                <div style="display: flex; align-items: center; gap: 10px; margin-top: 20px;">
+                    <span id="white-timer">White: {formatted_wtime}</span>
+                    <form id="doneForm" action="/board.html" method="post" onsubmit="return onFormSubmit();">
+                        <input type="hidden" name="turn" value="{next_turn}">
+                        <input type="hidden" id="wtime" name="wtime" value="{wtime}">
+                        <input type="hidden" id="btime" name="btime" value="{btime}">
+                        <input type="hidden" id="board" name="stringboard.txt" value="{fen_string}">
+                        <button type="submit">Done</button>
+                    </form>
+                    <span id="black-timer">{formatted_btime} :Black</span>
+                </div>
 
-                            <span id="black-timer">{formatted_btime} :Black</span>
-                        </div>
+                <!-- JavaScript Countdown Timer -->
+                <script>
+                    var turn = '{next_turn}';
+                    var wtime = {wtime};
+                    var btime = {btime};
+                    var whiteTimerEl = document.getElementById('white-timer');
+                    var blackTimerEl = document.getElementById('black-timer');
+                    var wtimeInput = document.getElementById('wtime');
+                    var btimeInput = document.getElementById('btime');
 
-                        <!-- JavaScript Countdown Timer -->
-                        <script>
-                            var turn = '{turn}';
-                            var wtime = {wtime};
-                            var btime = {btime};
-                            var whiteTimerEl = document.getElementById('white-timer');
-                            var blackTimerEl = document.getElementById('black-timer');
-                            var wtimeInput = document.getElementById('wtime');
-                            var btimeInput = document.getElementById('btime');
+                    function formatTime(seconds) {{
+                        var minutes = Math.floor(seconds / 60);
+                        var sec = seconds % 60;
+                        return minutes + ':' + (sec < 10 ? '0' : '') + sec;
+                    }}
 
-                            function formatTime(seconds) {{
-                                var minutes = Math.floor(seconds / 60);
-                                var sec = seconds % 60;
-                                return minutes + ':' + (sec < 10 ? '0' : '') + sec;
-                            }}
+                    function updateTimers() {{
+                        if (turn === 'w' && wtime > 0) {{
+                            wtime--;
+                            whiteTimerEl.textContent = 'White: ' + formatTime(wtime);
+                            wtimeInput.value = wtime;
+                        }} else if (turn === 'b' && btime > 0) {{
+                            btime--;
+                            blackTimerEl.textContent = formatTime(btime) + ' :Black';
+                            btimeInput.value = btime;
+                        }}
+                    }}
 
-                            function updateTimers() {{
-                                if (turn === 'w' && wtime > 0) {{
-                                    wtime--;
-                                    whiteTimerEl.textContent = 'White: ' + formatTime(wtime);
-                                    wtimeInput.value = wtime;
-                                }} else if (turn === 'b' && btime > 0) {{
-                                    btime--;
-                                    blackTimerEl.textContent = formatTime(btime) + ' :Black';
-                                    btimeInput.value = btime;
-                                }}
-                            }}
+                    setInterval(updateTimers, 1000);
+                </script>
+            </body>
+            </html>
+            """
 
-                            // Countdown every second
-                            setInterval(function() {{
-                                updateTimers();
-                            }}, 1000);
-                        </script>
-                    </body>
-                    </html>
-                    """
-
-                    # Send the HTML response to the client
-                    self.send_response(200)
-                    self.send_header("Content-type", "text/html")
-                    self.send_header("Content-length", len(nice_html))
-                    self.end_headers()
-                    self.wfile.write(bytes(nice_html, "utf-8"))
+            # Send the HTML response to the client
+            self.send_response(200)
+            self.send_header("Content-type", "text/html")
+            self.send_header("Content-length", len(nice_html))
+            self.end_headers()
+            self.wfile.write(bytes(nice_html, "utf-8"))
 
         elif parsed.path in ['/display.html']:
             # Parse the multipart form data

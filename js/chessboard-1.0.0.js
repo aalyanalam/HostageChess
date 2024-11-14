@@ -191,7 +191,7 @@
   }
 
   function validSquare (square) {
-    return isString(square) && square.search(/^[a-h](-3|-2|-1|[1-9]|10|11|12)$/) !== -1
+    return isString(square) && square.search(/^[a-h](-3|-2|-1|[0-9]|10|11|12)$/) !== -1
   }
 
   if (RUN_ASSERTS) {
@@ -808,7 +808,7 @@
       var row = 12
       if (orientation === 'black') {
         alpha.reverse()
-        row = 3
+        row = 1
       }
 
       var squareColor = 'white'
