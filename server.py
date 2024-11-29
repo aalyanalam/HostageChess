@@ -6,8 +6,50 @@ from http.server import HTTPServer, BaseHTTPRequestHandler
 # used to parse the URL and extract form data for GET requests
 from urllib.parse import urlparse, parse_qsl
 import hclib
+import sqlite3
+GAME_TIME = 300
+DATABASE = 'hostageChess.db'
 
-# handler for our web-server - handles both GET and POST requests
+class DBHandler:
+    def __init__(self, db_name='hostageChess.db'):
+        self.db_name = db_name
+
+    def connect(self):
+        return sqlite3.connect(self.db_name)
+
+    def initializeDB(self):
+        """Create tables if they don't exist."""
+        conn = self.connect()
+        cursor = conn.cursor()
+
+        # Create 'games' table
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS games (
+            GAME_NO INTEGER PRIMARY KEY AUTOINCREMENT,
+            WHITE_HANDLE TEXT NOT NULL,
+            BLACK_HANDLE TEXT,
+            RESULT TEXT
+        )
+        """)
+
+        # Create 'boards' table
+        cursor.execute("""
+        CREATE TABLE IF NOT EXISTS boards (
+            GAME_NO INTEGER NOT NULL,
+            TURN_NO INTEGER NOT NULL,
+            TURN TEXT NOT NULL,
+            BOARD TEXT NOT NULL,
+            REAL_TIME TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            WHITE_TIME INTEGER NOT NULL,
+            BLACK_TIME INTEGER NOT NULL,
+            FOREIGN KEY(GAME_NO) REFERENCES games(GAME_NO)
+        )
+        """)
+
+        conn.commit()
+        conn.close()
+
+#handler for our web-server - handles both GET and POST requests
 class MyHandler(BaseHTTPRequestHandler):
     def do_GET(self):
         # parse the URL to get the path and form data
@@ -16,7 +58,9 @@ class MyHandler(BaseHTTPRequestHandler):
         # Serve index.html
         if parsed.path in ['/index.html', '/']:
             try:
-                with open("index.html", 'r') as file:
+                # Construct the path to the index.html file in the client directory
+                file_path = os.path.join('client', 'index.html')
+                with open(file_path, 'r') as file:
                     content = file.read()
                     self.send_response(200)  # OK
                     self.send_header("Content-type", "text/html")
@@ -74,79 +118,64 @@ class MyHandler(BaseHTTPRequestHandler):
                 self.send_response(404)
                 self.end_headers()
                 self.wfile.write(b"<html><body><h1>404 Not Found</h1></body></html>")
+        
+        elif parsed.path.startswith('/Playerimg/'):
+            try:
+                file_path = '.' + parsed.path  # Serve the file from the correct directory
+                with open(file_path, 'rb') as file:
+                    self.send_response(200)
+                    self.send_header("Content-type", "image/png")
+                    self.send_header("Content-length", os.path.getsize(file_path))
+                    self.end_headers()
+                    self.wfile.write(file.read())
+            except FileNotFoundError:
+                self.send_response(404)
+                self.end_headers()
+                self.wfile.write(b"<html><body><h1>404 Not Found</h1></body></html>")
+        elif parsed.path.startswith('/audio/'):
+            try:
+                file_path = '.' + parsed.path  # Resolve the file path
+                with open(file_path, 'rb') as file:
+                    self.send_response(200)
+                    self.send_header("Content-type", "audio/mpeg")
+                    self.send_header("Content-length", os.path.getsize(file_path))
+                    self.end_headers()
+                    self.wfile.write(file.read())
+            except FileNotFoundError:
+                self.send_response(404)
+                self.end_headers()
+                self.wfile.write(b"<html><body><h1>404 Not Found</h1></body></html>")
 
-        # Keep existing functionality for start.html and upload.html unchanged
         elif parsed.path in ['/start.html']:
-            # Existing code for /start.html
-            content = """
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                <title>Chessboard</title>
-                <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
-            </head>
-            <body>
-                <div id="board" style="width: 400px;"></div>
-                <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-                <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
-                <script>
-                    var board = Chessboard('board', {
-                        position: 'start',
-                        pieceTheme: 'img/chesspieces/wikipedia/{piece}.png' 
-                    });
-                </script>
-            </body>
-            </html>
-            """
-            self.send_response(200)
-            self.send_header("Content-type", "text/html")
-            self.send_header("Content-length", len(content))
-            self.end_headers()
-            self.wfile.write(bytes(content, "utf-8"))
+            try:
+                file_path = os.path.join('client', 'start.html')  # Point to client/start.html
+                with open(file_path, 'r') as file:
+                    content = file.read()
+                    self.send_response(200)
+                    self.send_header("Content-type", "text/html")
+                    self.send_header("Content-length", len(content))
+                    self.end_headers()
+                    self.wfile.write(bytes(content, "utf-8"))
+            except FileNotFoundError:
+                self.send_response(404)
+                self.end_headers()
+                self.wfile.write(b"<html><body><h1>404 Not Found</h1></body></html>")
 
         elif parsed.path in ['/upload.html']:
             # Existing code for /upload.html
-            content = """
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title> Upload </title>
-            </head>
-            <body>
-                <form action="/board.html" method="post" enctype="multipart/form-data">
-                    <input type="file" id="board" name="stringboard.txt" required><br><br>
-
-                    <!-- turn -->
-                    <label for="turn">Turn (w or b):</label><br>
-                    <input type="text" id="turn" name="turn" maxlength="1" pattern="[wb]" placeholder="w" required><br><br>
-
-                    <!-- wtime -->
-                    <label for="wtime">White Time (seconds):</label><br>
-                    <div style="display: flex; align-items: center;">
-                        <input type="number" id="wtime" name="wtime" min="0" placeholder="300" required>
-                        <span style="margin-left: 5px;">s</span>
-                    </div><br>
-
-                    <!-- btime -->
-                    <label for="btime">Black Time (seconds):</label><br>
-                    <div style="display: flex; align-items: center;">
-                        <input type="number" id="btime" name="btime" min="0" placeholder="300" required>
-                        <span style="margin-left: 5px;">s</span>
-                    </div><br>
-
-                    <!-- submit button -->
-                    <input type="submit" value="Submit">
-                </form>
-            </body>
-            </html>
-            """
-            self.send_response(200)
-            self.send_header("Content-type", "text/html")
-            self.send_header("Content-length", len(content))
-            self.end_headers()
-            self.wfile.write(bytes(content, "utf-8"))
+            try:
+                file_path = os.path.join('client', 'upload.html')
+                with open(file_path, 'r') as file:
+                    content = file.read()
+                    self.send_response(200)
+                    self.send_header("Content-type", "text/html")
+                    self.send_header("Content-length", len(content))
+                    self.end_headers()
+                    self.wfile.write(bytes(content, "utf-8"))
+            except FileNotFoundError:
+                self.send_response(404)
+                self.end_headers()
+                self.wfile.write(b"<html><body><h1>404 Not Found</h1></body></html>")
 
     def do_POST(self):
         # handle post request
@@ -154,9 +183,9 @@ class MyHandler(BaseHTTPRequestHandler):
 
         if parsed.path in ['/board.html']:
             form = cgi.FieldStorage(fp=self.rfile,
-                                headers=self.headers,
-                                environ={'REQUEST_METHOD': 'POST',
-                                         'CONTENT_TYPE': self.headers['Content-Type']})
+                                    headers=self.headers,
+                                    environ={'REQUEST_METHOD': 'POST',
+                                            'CONTENT_TYPE': self.headers['Content-Type']})
 
             turn = form.getvalue('turn', 'w')
             try:
@@ -168,7 +197,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 self.wfile.write(b"<html><body><h1>Error: Invalid time values</h1></body></html>")
                 return
 
-            # Read the board from the form data or uploaded file
+            #Read board from form data or uploaded file
             if 'stringboard.txt' in form:
                 if form['stringboard.txt'].filename:
                     # Initial file upload handling
@@ -185,7 +214,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 self.wfile.write(b"<html><body><h1>Error: No board data received</h1></body></html>")
                 return
 
-            # Helper function to format time
+            #Helper function to format time
             def format_time(seconds):
                 minutes = seconds // 60
                 sec = seconds % 60
@@ -195,86 +224,29 @@ class MyHandler(BaseHTTPRequestHandler):
             formatted_btime = format_time(btime)
             next_turn = 'b' if turn == 'w' else 'w'
 
-            # Generate the HTML response directly in do_POST
-            nice_html = f"""
-            <!DOCTYPE html>
-            <html lang="en">
-            <head>
-                <meta charset="UTF-8">
-                <title>Chessboard with Timers</title>
-                <link rel="stylesheet" href="/css/chessboard-1.0.0.css">
-                <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-                <script src="/js/chessboard-1.0.0.js"></script>
-            </head>
-            <body>
-                <h1>Chessboard</h1>
-                <div id="myBoard" style="width: 400px;"></div>
-                <script>
-                    var board = Chessboard('myBoard', {{
-                        position: '{fen_string}',
-                        draggable: true
-                    }});
+            try:
+                # Load the template file
+                file_path = os.path.join('client', 'board.html')
+                with open(file_path, 'r') as file:
+                    content = file.read()
+                    # Perform substitutions
+                    content = content.replace('{fen_string}', fen_string)
+                    content = content.replace('{formatted_wtime}', formatted_wtime)
+                    content = content.replace('{formatted_btime}', formatted_btime)
+                    content = content.replace('{next_turn}', next_turn)
+                    content = content.replace('{wtime}', str(wtime))
+                    content = content.replace('{btime}', str(btime))
 
-                    function onFormSubmit() {{
-                        var newFen = board.fen();
-                        document.getElementById('board').value = newFen;
-                        return true;
-                    }}
-                </script>
-
-                <!-- Timer display and "Done" button -->
-                <div style="display: flex; align-items: center; gap: 10px; margin-top: 20px;">
-                    <span id="white-timer">White: {formatted_wtime}</span>
-                    <form id="doneForm" action="/board.html" method="post" onsubmit="return onFormSubmit();">
-                        <input type="hidden" name="turn" value="{next_turn}">
-                        <input type="hidden" id="wtime" name="wtime" value="{wtime}">
-                        <input type="hidden" id="btime" name="btime" value="{btime}">
-                        <input type="hidden" id="board" name="stringboard.txt" value="{fen_string}">
-                        <button type="submit">Done</button>
-                    </form>
-                    <span id="black-timer">{formatted_btime} :Black</span>
-                </div>
-
-                <!-- JavaScript Countdown Timer -->
-                <script>
-                    var turn = '{next_turn}';
-                    var wtime = {wtime};
-                    var btime = {btime};
-                    var whiteTimerEl = document.getElementById('white-timer');
-                    var blackTimerEl = document.getElementById('black-timer');
-                    var wtimeInput = document.getElementById('wtime');
-                    var btimeInput = document.getElementById('btime');
-
-                    function formatTime(seconds) {{
-                        var minutes = Math.floor(seconds / 60);
-                        var sec = seconds % 60;
-                        return minutes + ':' + (sec < 10 ? '0' : '') + sec;
-                    }}
-
-                    function updateTimers() {{
-                        if (turn === 'w' && wtime > 0) {{
-                            wtime--;
-                            whiteTimerEl.textContent = 'White: ' + formatTime(wtime);
-                            wtimeInput.value = wtime;
-                        }} else if (turn === 'b' && btime > 0) {{
-                            btime--;
-                            blackTimerEl.textContent = formatTime(btime) + ' :Black';
-                            btimeInput.value = btime;
-                        }}
-                    }}
-
-                    setInterval(updateTimers, 1000);
-                </script>
-            </body>
-            </html>
-            """
-
-            # Send the HTML response to the client
-            self.send_response(200)
-            self.send_header("Content-type", "text/html")
-            self.send_header("Content-length", len(nice_html))
-            self.end_headers()
-            self.wfile.write(bytes(nice_html, "utf-8"))
+                    # Serve the substituted content
+                    self.send_response(200)
+                    self.send_header("Content-type", "text/html")
+                    self.send_header("Content-length", len(content))
+                    self.end_headers()
+                    self.wfile.write(bytes(content, "utf-8"))
+            except FileNotFoundError:
+                self.send_response(404)
+                self.end_headers()
+                self.wfile.write(b"<html><body><h1>404 Not Found</h1></body></html>")
 
         elif parsed.path in ['/display.html']:
             # Parse the multipart form data
@@ -296,54 +268,48 @@ class MyHandler(BaseHTTPRequestHandler):
                     board = hclib.boardstring(stringboard_data)
 
                     # Use the fen method to create a FEN string
-                    # Assuming 'w', 'KQkq', '-', 0, 1 are the required values
-                    fen_string = hclib.fen(board, 'w', 'KQkq', '-', 0, 1)  # Test values; replace if needed
+                    fen_string = hclib.fen(board, 'w', 'KQkq', '-', 0, 1)  # Adjust values if needed
 
+                    try:
+                        # Load the `display.html` template
+                        file_path = os.path.join('client', 'display.html')
+                        with open(file_path, 'r') as file:
+                            content = file.read()
 
-                    # Generate the HTML page with the chessboard
-                    nice_html = f"""
-                    <!DOCTYPE html>
-                    <html lang="en">
-                    <head>
-                        <meta charset="UTF-8">
-                        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-                        <title>Chessboard Display</title>
-                        <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
-                        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
-                        <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
-                    </head>
-                    <body>
-                        <h1>Chessboard Display</h1>
-                        <div id="board" style="width: 400px;"></div>
+                            # Replace the placeholder with the generated FEN string
+                            content = content.replace('{fen_string}', fen_string)
 
-                        <script>
-                            var board = Chessboard('board','{fen_string}');
-                        </script>
-                    </body>
-                    </html>
-                    """
-
-                    # Send the generated HTML page to the client
-                    self.send_response(200)
-                    self.send_header("Content-type", "text/html")
-                    self.send_header("Content-length", len(nice_html))
-                    self.end_headers()
-
-                    # Write the response
-                    self.wfile.write(bytes(nice_html, "utf-8"))
-
+                            # Serve the dynamically generated HTML
+                            self.send_response(200)
+                            self.send_header("Content-type", "text/html")
+                            self.send_header("Content-length", len(content))
+                            self.end_headers()
+                            self.wfile.write(bytes(content, "utf-8"))
+                    except FileNotFoundError:
+                        # Handle missing `display.html`
+                        self.send_response(404)
+                        self.end_headers()
+                        self.wfile.write(b"<html><body><h1>404 Not Found</h1></body></html>")
                 else:
-                    # Handle the case where no file was uploaded
+                    # Handle case where file has no content
                     self.send_response(400)
                     self.end_headers()
                     self.wfile.write(b"<html><body><h1>Error: No file uploaded</h1></body></html>")
             else:
-                # If the file input is not found in the form
+                # Handle invalid form input
                 self.send_response(400)
                 self.end_headers()
                 self.wfile.write(b"<html><body><h1>Error: Invalid form input</h1></body></html>")
 
 if __name__ == "__main__":
-    httpd = HTTPServer( ( 'localhost', int(sys.argv[1]) ), MyHandler )
-    print( "Server listing in port:  ", int(sys.argv[1]) )
+    if len(sys.argv) != 2:
+        print("Usage: python server.py <port>")
+        sys.exit(1)
+
+    db_handler = DBHandler()
+    db_handler.initializeDB()
+
+    # Initialize and start server
+    httpd = HTTPServer( ( '0.0.0.0', int(sys.argv[1]) ), MyHandler )
+    print( "Server listing in port:0.0.0.0", int(sys.argv[1]) )
     httpd.serve_forever()

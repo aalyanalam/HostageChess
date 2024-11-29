@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hostage Chess</title>
+    <link rel="stylesheet" href="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        #player1, #player2 {
+            margin: 10px 0;
+            cursor: pointer; /* Makes image look clickable */
+        }
+        #board {
+            margin: 20px auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome to Hostage Chess</h1>
+    <form action="/login.html" method="post">
+        <label for="handle">Enter your handle:</label>
+        <input type="text" id="handle" name="handle" required>
+        <button type="submit">Submit</button>
+    </form>
+    <a href="/history.html">Go to Game History</a>
+
+    <!-- Player 1 -->
+    <div id="player1" onclick="playAudio()">
+        <img src="/Playerimg/King1.png" alt="Player 1" width="100">
+        <p>Player 1</p>
+    </div>
+
+    <!-- Chess Board -->
+    <div id="board" style="width: 400px;"></div>
+
+    <!-- Player 2 -->
+    <div id="player2" onclick="playAudio()">
+        <img src="/Playerimg/King2.png" alt="Player 2" width="100">
+        <p>Player 2</p>
+    </div>
+
+    <!-- Hidden Audio Element -->
+    <audio id="kingLaugh" src="/audio/king_laugh.mp3"></audio>
+
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="https://unpkg.com/@chrisoakman/chessboardjs@1.0.0/dist/chessboard-1.0.0.min.js"></script>
+    <script>
+        //Initialize chessboard
+        var board = Chessboard('board', {
+            position: 'start',
+            pieceTheme: '/img/chesspieces/wikipedia/{piece}.png'
+        });
+
+        //Function to play audio
+        function playAudio() {
+            console.log("Audio play triggered");
+            var audio = document.getElementById('kingLaugh');
+            audio.play();
+        }
+    </script>
+</body>
+</html>

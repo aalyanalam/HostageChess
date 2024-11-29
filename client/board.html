@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chessboard with Timers</title>
+    <link rel="stylesheet" href="/css/chessboard-1.0.0.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="/js/chessboard-1.0.0.js"></script>
+</head>
+<body>
+    <h1>Chessboard</h1>
+    <div id="myBoard" style="width: 400px;"></div>
+    <script>
+        var board = Chessboard('myBoard', {
+            position: '{fen_string}',
+            draggable: true
+        });
+
+        function onFormSubmit() {
+            var newFen = board.fen();
+            document.getElementById('board').value = newFen;
+            return true;
+        }
+    </script>
+
+    <!-- Timer display and "Done" button -->
+    <div style="display: flex; align-items: center; gap: 10px; margin-top: 20px;">
+        <span id="white-timer">White: {formatted_wtime}</span>
+        <form id="doneForm" action="/board.html" method="post" onsubmit="return onFormSubmit();">
+            <input type="hidden" name="turn" value="{next_turn}">
+            <input type="hidden" id="wtime" name="wtime" value="{wtime}">
+            <input type="hidden" id="btime" name="btime" value="{btime}">
+            <input type="hidden" id="board" name="stringboard.txt" value="{fen_string}">
+            <button type="submit">Done</button>
+        </form>
+        <span id="black-timer">{formatted_btime} :Black</span>
+    </div>
+
+    <!-- JavaScript Countdown Timer -->
+    <script>
+        var turn = '{next_turn}';
+        var wtime = {wtime};
+        var btime = {btime};
+        var whiteTimerEl = document.getElementById('white-timer');
+        var blackTimerEl = document.getElementById('black-timer');
+        var wtimeInput = document.getElementById('wtime');
+        var btimeInput = document.getElementById('btime');
+
+        function formatTime(seconds) {
+            var minutes = Math.floor(seconds / 60);
+            var sec = seconds % 60;
+            return minutes + ':' + (sec < 10 ? '0' : '') + sec;
+        }
+
+        function updateTimers() {
+            if (turn === 'w' && wtime > 0) {
+                wtime--;
+                whiteTimerEl.textContent = 'White: ' + formatTime(wtime);
+                wtimeInput.value = wtime;
+            } else if (turn === 'b' && btime > 0) {
+                btime--;
+                blackTimerEl.textContent = formatTime(btime) + ' :Black';
+                btimeInput.value = btime;
+            }
+        }
+
+        setInterval(updateTimers, 1000);
+    </script>
+</body>
+</html>

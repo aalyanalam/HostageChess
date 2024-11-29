@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Upload</title>
+</head>
+<body>
+    <form action="/board.html" method="post" enctype="multipart/form-data">
+        <input type="file" id="board" name="stringboard.txt" required><br><br>
+
+        <!-- turn -->
+        <label for="turn">Turn (w or b):</label><br>
+        <input type="text" id="turn" name="turn" maxlength="1" pattern="[wb]" placeholder="w" required><br><br>
+
+        <!-- wtime -->
+        <label for="wtime">White Time (seconds):</label><br>
+        <div style="display: flex; align-items: center;">
+            <input type="number" id="wtime" name="wtime" min="0" placeholder="300" required>
+            <span style="margin-left: 5px;">s</span>
+        </div><br>
+
+        <!-- btime -->
+        <label for="btime">Black Time (seconds):</label><br>
+        <div style="display: flex; align-items: center;">
+            <input type="number" id="btime" name="btime" min="0" placeholder="300" required>
+            <span style="margin-left: 5px;">s</span>
+        </div><br>
+
+        <!-- submit button -->
+        <input type="submit" value="Submit">
+    </form>
+</body>
+</html>
