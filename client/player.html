@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hostage Chess - Player View</title>
+    <link rel="stylesheet" href="/css/chessboard-1.0.0.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="/js/chessboard-1.0.0.js"></script>
+</head>
+<body>
+    <h1>Hostage Chess</h1>
+    <div id="myBoard" style="width: 400px;"></div>
+
+    <script>
+        // Initialize the chessboard
+        const board = Chessboard('myBoard', {
+            position: '{fen_string}',
+            draggable: true
+        });
+
+        console.log("Chessboard initialized with FEN:", '{fen_string}');
+
+        // Function to handle "Done" button click
+        function onDoneClick() {
+            const gameNo = '{game_no}';
+            const turnNo = parseInt('{turn_no}', 10); // Convert to integer
+            const newTurnNo = turnNo + 1; // Increment the turn number
+            const newFen = board.fen(); // Get the updated board state
+
+            // Redirect to /opponent.html with updated parameters
+            const redirectUrl = `/opponent.html?game_no=${gameNo}&turn_no=${newTurnNo}&board=${encodeURIComponent(newFen)}`;
+            window.location.href = redirectUrl;
+        }
+    </script>
+
+    <!-- Timer display and "Done" button -->
+    <div style="display: flex; align-items: center; gap: 10px; margin-top: 20px;">
+        <span id="white-timer">White: {formatted_wtime}</span>
+        <span id="black-timer">{formatted_btime} :Black</span>
+        <button onclick="onDoneClick()">Done</button>
+    </div>
+
+    <!-- JavaScript Countdown Timer -->
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            console.log("DOM fully loaded.");
+
+            // Initialize variables for the timer
+            let turn = '{next_turn}'; // Current turn ('White' or 'Black')
+            let wtime = parseInt('{wtime}', 10); // White's time in seconds
+            let btime = parseInt('{btime}', 10); // Black's time in seconds
+
+            console.log("Turn:", turn);
+            console.log("Initial White Time:", wtime, "seconds");
+            console.log("Initial Black Time:", btime, "seconds");
+
+            const whiteTimerEl = document.getElementById('white-timer');
+            const blackTimerEl = document.getElementById('black-timer');
+
+            // Helper function to format time as mm:ss
+            function formatTime(seconds) {
+                const minutes = Math.floor(seconds / 60);
+                const sec = seconds % 60;
+                return `${minutes}:${sec < 10 ? '0' : ''}${sec}`;
+            }
+
+            // Timer update function
+            function updateTimers() {
+                console.log("Updating timers. Current turn:", turn);
+                if (turn === 'White' && wtime > 0) {
+                    wtime--; // Decrement White's timer
+                    whiteTimerEl.textContent = 'White: ' + formatTime(wtime);
+                } else if (turn === 'Black' && btime > 0) {
+                    btime--; // Decrement Black's timer
+                    blackTimerEl.textContent = formatTime(btime) + ' :Black';
+                }
+            }
+
+            // Start the countdown timer
+            console.log("Starting countdown timer...");
+            setInterval(updateTimers, 1000);
+
+            // Initialize the timer display
+            whiteTimerEl.textContent = 'White: ' + formatTime(wtime);
+            blackTimerEl.textContent = formatTime(btime) + ' :Black';
+            console.log("Initial timer display set.");
+        });
+    </script>
+</body>
+</html>

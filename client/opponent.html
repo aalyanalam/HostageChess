@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hostage Chess - Opponent View</title>
+    <link rel="stylesheet" href="/css/chessboard-1.0.0.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="/js/chessboard-1.0.0.js"></script>
+</head>
+<body>
+    <h1>Hostage Chess - Opponent's Turn</h1>
+    <div id="myBoard" style="width: 400px;"></div>
+
+    <!-- Timer Display -->
+    <div style="display: flex; align-items: center; gap: 10px; margin-top: 20px;">
+        <span id="white-timer">White: {formatted_wtime}</span>
+        <span id="black-timer">{formatted_btime} :Black</span>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+        const turn = '{next_turn}'; // Current turn ('White' or 'Black')
+        let wtime = 300; // Static time for now
+        let btime = 300; // Static time for now
+
+        const whiteTimerEl = document.getElementById('white-timer');
+        const blackTimerEl = document.getElementById('black-timer');
+
+        function formatTime(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const sec = seconds % 60;
+            return `${minutes}:${sec < 10 ? '0' : ''}${sec}`;
+        }
+
+        function updateTimers() {
+            if (turn === 'White' && wtime > 0) {
+                wtime--;
+                whiteTimerEl.textContent = 'White: ' + formatTime(wtime);
+            } else if (turn === 'Black' && btime > 0) {
+                btime--;
+                blackTimerEl.textContent = formatTime(btime) + ' :Black';
+            }
+        }
+
+        setInterval(updateTimers, 1000);
+
+        // Initialize the board
+        const board = Chessboard('myBoard', {
+            position: '{fen_string}', // Updated board state
+            draggable: false // Disable interactivity
+        });
+    });
+    </script>
+</body>
+</html>
