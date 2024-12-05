@@ -693,30 +693,31 @@ move_t **rookmoves(board_t *board, int from_i, int from_j, int colour)
 }
 
 
-move_t **queenmoves(board_t *board, int from_i, int from_j, int colour)
-{
+move_t **queenmoves(board_t *board, int from_i, int from_j, int colour) {
     move_t **moves = malloc(28 * sizeof(move_t *)); // Allocate max possible moves + NULL pointer
     int numOfMoves = 0;
 
-    move_t **rookMoves = rookmoves(board, from_i, from_j, colour); // Get rook moves
-    // Add rook moves to queen's moves list
-    for (int i = 0; rookMoves[i] != NULL; i++) 
-    {
-        moves[numOfMoves++] = rookMoves[i];  //Add pointers to queen's moves
+    // Get rook moves and copy them to queen's moves list
+    move_t **rookMoves = rookmoves(board, from_i, from_j, colour);
+    for (int i = 0; rookMoves[i] != NULL; i++) {
+        moves[numOfMoves++] = rookMoves[i]; // Add pointers to queen's moves
     }
-    free(rookMoves);  // Free temporary array holding rook moves
+    // Free the rookMoves array but not the moves inside it (they are now in `moves`)
+    free(rookMoves);
 
-    move_t **bishopMoves = bishopmoves(board, from_i, from_j, colour); // Get bishop moves
-    // Append bishop moves to queen's moves list
-    for (int i = 0; bishopMoves[i] != NULL; i++) 
-    {
-        moves[numOfMoves++] = bishopMoves[i];  //Add pointers to queen's moves
+    // Get bishop moves and copy them to queen's moves list
+    move_t **bishopMoves = bishopmoves(board, from_i, from_j, colour);
+    for (int i = 0; bishopMoves[i] != NULL; i++) {
+        moves[numOfMoves++] = bishopMoves[i]; // Add pointers to queen's moves
     }
-    free(bishopMoves);  // Free temporary array holding bishop moves
+    // Free the bishopMoves array but not the moves inside it (they are now in `moves`)
+    free(bishopMoves);
 
-    //Realloc to exact amount needed with NULL at the end
+    // Reallocate to exact amount needed and add NULL at the end
     moves = realloc(moves, (numOfMoves + 1) * sizeof(move_t *));
-    moves[numOfMoves] = NULL;
+    if (moves != NULL) {
+        moves[numOfMoves] = NULL;
+    }
 
     return moves;
 }
@@ -808,5 +809,3 @@ move_t **pawn_moves(board_t *board, int from_i, int from_j, int colour)
 
     return moves;
 }
-
-
