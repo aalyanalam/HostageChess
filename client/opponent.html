@@ -20,46 +20,60 @@
 
     <script>
         document.addEventListener("DOMContentLoaded", () => {
-            const turn = '{next_turn}'; // Current turn ('White' or 'Black')
-            let wtime = parseInt("{wtime}", 10); // White's remaining time
-            let btime = parseInt("{btime}", 10); // Black's remaining time
+            console.log("Opponent view loaded.");
+
+            // Initialize variables
+            const turnNo = parseInt('{turn_no}', 10); // Current turn number
+            let wtime = parseInt("{wtime}", 10); // White's remaining time in seconds
+            let btime = parseInt("{btime}", 10); // Black's remaining time in seconds
+
+            console.log("Turn Number:", turnNo);
+            console.log("Initial White Time:", wtime, "seconds");
+            console.log("Initial Black Time:", btime, "seconds");
 
             const whiteTimerEl = document.getElementById('white-timer');
             const blackTimerEl = document.getElementById('black-timer');
 
+            // Helper function to format time as mm:ss
             function formatTime(seconds) {
                 const minutes = Math.floor(seconds / 60);
                 const sec = seconds % 60;
                 return `${minutes}:${sec < 10 ? '0' : ''}${sec}`;
             }
 
+            // Timer update function
             function updateTimers() {
-                if (turn === 'White' && wtime > 0) {
+                if (turnNo % 2 === 1 && wtime > 0) { // Odd turn number, decrement White
                     wtime--;
                     whiteTimerEl.textContent = 'White: ' + formatTime(wtime);
-                } else if (turn === 'Black' && btime > 0) {
+                } else if (turnNo % 2 === 0 && btime > 0) { // Even turn number, decrement Black
                     btime--;
                     blackTimerEl.textContent = formatTime(btime) + ' :Black';
                 }
             }
 
+            // Start the countdown timer
             setInterval(updateTimers, 1000);
 
-            // Initialize the board
+            // Initialize the timer display
+            whiteTimerEl.textContent = 'White: ' + formatTime(wtime);
+            blackTimerEl.textContent = formatTime(btime) + ' :Black';
+
+            // Initialize the chessboard
             const board = Chessboard('myBoard', {
                 position: '{fen_string}',
                 draggable: false
             });
+
+            console.log("Chessboard initialized for Opponent view with FEN:", '{fen_string}');
         });
     </script>
 
     <script>
         const gameNo = "{game_no}";
         const turnNo = "{turn_no}";
-        const currentTurn = '{next_turn}';
         console.log("Game Number in opponent.html:", gameNo);
         console.log("Turn Number in opponent.html:", turnNo);
-        console.log("Current Turn in opponent.html:", currentTurn); // Log the current turn
     </script>
 
 </body>

@@ -12,7 +12,7 @@ from urllib.parse import urlparse, parse_qsl, unquote
 from datetime import datetime
 
 
-GAME_TIME = 12
+GAME_TIME = 300
 DATABASE = 'hostageChess.db'
 
 class DBHandler:
@@ -567,6 +567,8 @@ class MyHandler(BaseHTTPRequestHandler):
                     content = content.replace('{formatted_wtime}', formatted_wtime)
                     content = content.replace('{formatted_btime}', formatted_btime)
                     content = content.replace('{next_turn}', next_turn)
+                    content = content.replace('{wtime}', str(white_time))
+                    content = content.replace('{btime}', str(black_time))
 
                     self.send_response(200)
                     self.send_header("Content-type", "text/html")
