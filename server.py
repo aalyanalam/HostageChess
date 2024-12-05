@@ -222,7 +222,78 @@ class MyHandler(BaseHTTPRequestHandler):
                 self.send_response(500)
                 self.end_headers()
                 self.wfile.write(b"<html><body><h1>500 Internal Server Error</h1></body></html>")
+        
+        elif parsed.path in ['/gamelog.html']:
+            try:
+                print("DEBUG: Entering /gamelog.html handler.")
+                
+                # Parse query parameters
+                query_params = dict(parse_qsl(parsed.query))
+                game_no = query_params.get('game_no')
 
+                if not game_no:
+                    print("DEBUG: Missing game_no parameter.")
+                    self.send_response(400)
+                    self.end_headers()
+                    self.wfile.write(b"<html><body><h1>400 Bad Request: Missing game_no parameter</h1></body></html>")
+                    return
+                
+                conn = sqlite3.connect(DATABASE)
+                cursor = conn.cursor()
+
+                # Fetch all turns for the specified GAME_NO
+                cursor.execute("""
+                    SELECT TURN_NO, TURN, BOARD FROM boards WHERE GAME_NO = ? ORDER BY TURN_NO ASC
+                """, (game_no,))
+                turns = cursor.fetchall()
+
+                # Fetch the game's result
+                cursor.execute("""
+                    SELECT RESULT FROM games WHERE GAME_NO = ?
+                """, (game_no,))
+                result = cursor.fetchone()
+
+                conn.close()
+
+                if not turns:
+                    print("DEBUG: No turns found for Game No:", game_no)
+                    self.send_response(404)
+                    self.end_headers()
+                    self.wfile.write(b"<html><body><h1>404 Game Not Found</h1></body></html>")
+                    return
+
+                # Prepare the game log HTML
+                file_path = os.path.join('client', 'gamelog.html')
+                with open(file_path, 'r') as file:
+                    content = file.read()
+
+                    turn_details = ""
+                    for turn_no, turn, board in turns:
+                        turn_details += f"""
+                            <div class="turn-details">
+                                <h3>Turn {turn_no}: {turn}'s Move</h3>
+                                <div class="board" data-board="{board}"></div>
+                            </div>
+                        """
+
+                    game_result = result[0] if result else "No result available."
+
+                    content = content.replace('{game_no}', str(game_no))
+                    content = content.replace('{turn_details}', turn_details)
+                    content = content.replace('{game_result}', game_result)
+
+                    self.send_response(200)
+                    self.send_header("Content-type", "text/html")
+                    self.send_header("Content-length", len(content))
+                    self.end_headers()
+                    self.wfile.write(bytes(content, "utf-8"))
+
+            except Exception as e:
+                print(f"DEBUG: Error in /gamelog.html: {e}")
+                self.send_response(500)
+                self.end_headers()
+                self.wfile.write(b"<html><body><h1>500 Internal Server Error</h1></body></html>")
+        
         elif parsed.path == '/done.js':
             try:
                 query_params = dict(parse_qsl(parsed.query))
@@ -347,6 +418,44 @@ class MyHandler(BaseHTTPRequestHandler):
                 if board:
                     print(f"DEBUG: Adding new row for Game No: {game_no}, Turn No: {turn_no}.")
 
+                    # Check if either King is missing
+                    if 'K' not in board or 'k' not in board:
+                        winner = "White" if 'k' not in board else "Black"
+                        loser = "Black" if winner == "White" else "White"
+                        result = f"{winner} wins: Opponent's king was captured."
+
+                        # Update the games table with the result
+                        cursor.execute("""
+                            UPDATE games SET RESULT = ? WHERE GAME_NO = ?
+                        """, (result, game_no))
+                        conn.commit()
+
+                        print(f"DEBUG: Game result updated: {result}")
+
+                        # Serve a game-over message
+                        result_page_content = f"""
+                        <html>
+                        <body style="background-color: navy; color: white;">
+                            <h1>{result}</h1>
+                            <p><a href="/history.html" style="color: lightblue;">View Game History</a></p>
+                            <p><a href="/index.html" style="color: lightblue;">Return to Home</a></p>
+                            <script>
+                                // Redirect opponent if they're on /opponent.html
+                                if (window.location.pathname === '/opponent.html') {{
+                                    window.location.reload();
+                                }}
+                            </script>
+                        </body>
+                        </html>
+                        """
+                        self.send_response(200)
+                        self.send_header("Content-type", "text/html")
+                        self.send_header("Content-length", len(result_page_content))
+                        self.end_headers()
+                        self.wfile.write(bytes(result_page_content, "utf-8"))
+                        conn.close()
+                        return
+
                     # Fetch previous turn details
                     cursor.execute("""
                         SELECT TURN, REAL_TIME, WHITE_TIME, BLACK_TIME FROM boards
@@ -399,10 +508,10 @@ class MyHandler(BaseHTTPRequestHandler):
                             # Serve a page with the result message and links to /history.html and /index.html
                             result_page_content = f"""
                             <html>
-                            <body>
+                            <body style="background-color: navy; color: white;">
                                 <h1>{result}</h1>
-                                <p><a href="/history.html">View Game History</a></p>
-                                <p><a href="/index.html">Return to Home</a></p>
+                                <p><a href="/history.html" style="color: lightblue;">View Game History</a></p>
+                                <p><a href="/index.html" style="color: lightblue;">Return to Home</a></p>
                             </body>
                             </html>
                             """

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Game Log</title>
+    <link rel="stylesheet" href="/css/chessboard-1.0.0.css">
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+    <script src="/js/chessboard-1.0.0.js"></script>
+    <style>
+        body {
+            background-color: #728FCE;
+            color: white;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        .turn-details {
+            margin: 20px 0;
+            padding: 10px;
+            border: 1px solid white;
+            border-radius: 8px;
+        }
+        .board {
+            margin: 10px auto;
+            width: 400px;
+        }
+    </style>
+</head>
+<body>
+    <h1>Game Log for Game #{game_no}</h1>
+
+    <div id="game-log">
+        {turn_details}
+    </div>
+
+    <h2>Result: {game_result}</h2>
+
+    <div>
+        <a href="/history.html" style="color: lightblue;">Back to History</a>
+        |
+        <a href="/index.html" style="color: lightblue;">Back to Home</a>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            console.log("Rendering boards...");
+            document.querySelectorAll('.board').forEach((boardDiv) => {
+                const fenString = boardDiv.dataset.board;
+                Chessboard(boardDiv, {
+                    position: fenString,
+                    draggable: false
+                });
+            });
+        });
+    </script>
+</body>
+</html>
