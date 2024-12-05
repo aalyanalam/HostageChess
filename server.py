@@ -424,6 +424,14 @@ class MyHandler(BaseHTTPRequestHandler):
                         loser = "Black" if winner == "White" else "White"
                         result = f"{winner} wins: Opponent's king was captured."
 
+                        # Insert the new turn into the database for the other player to be redirected
+                        next_turn_color = loser
+                        cursor.execute("""
+                            INSERT INTO boards (GAME_NO, TURN_NO, TURN, BOARD, REAL_TIME, WHITE_TIME, BLACK_TIME)
+                            VALUES (?, ?, ?, ?, datetime('now'), ?, ?)
+                        """, (game_no, turn_no, next_turn_color, board, 0, 0))  # Timers are set to 0 as the game is over
+                        conn.commit()
+
                         # Update the games table with the result
                         cursor.execute("""
                             UPDATE games SET RESULT = ? WHERE GAME_NO = ?
@@ -435,16 +443,10 @@ class MyHandler(BaseHTTPRequestHandler):
                         # Serve a game-over message
                         result_page_content = f"""
                         <html>
-                        <body style="background-color: navy; color: white;">
+                        <body style="background-color: #728FCE; color: white;">
                             <h1>{result}</h1>
                             <p><a href="/history.html" style="color: lightblue;">View Game History</a></p>
                             <p><a href="/index.html" style="color: lightblue;">Return to Home</a></p>
-                            <script>
-                                // Redirect opponent if they're on /opponent.html
-                                if (window.location.pathname === '/opponent.html') {{
-                                    window.location.reload();
-                                }}
-                            </script>
                         </body>
                         </html>
                         """
@@ -508,7 +510,7 @@ class MyHandler(BaseHTTPRequestHandler):
                             # Serve a page with the result message and links to /history.html and /index.html
                             result_page_content = f"""
                             <html>
-                            <body style="background-color: navy; color: white;">
+                            <body style="background-color: #728FCE; color: white;">
                                 <h1>{result}</h1>
                                 <p><a href="/history.html" style="color: lightblue;">View Game History</a></p>
                                 <p><a href="/index.html" style="color: lightblue;">Return to Home</a></p>
