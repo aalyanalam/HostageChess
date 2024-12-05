@@ -1,9 +1,9 @@
 $(document).ready(function () {
     console.log("done.js loaded");
 
-    // Extract query parameters from the current URL
+    // Extract query parameters from URL
     const urlParams = new URLSearchParams(window.location.search);
-    const game_no = parseInt(urlParams.get('game_no'), 10); // Ensure this retrieves a valid value
+    const game_no = parseInt(urlParams.get('game_no'), 10); // Make sure this retrieves a valid value
     const turn_no = parseInt(urlParams.get('turn_no'), 10);
 
     console.log("Game Number in /done.js:", game_no);
@@ -17,14 +17,14 @@ $(document).ready(function () {
     function checkForNewTurn() {
         console.log("Polling server for new turn...");
 
-        // Use GET request now
+        // Use GET request now (Tried Post didn't work)
         $.get(
             "/check_new_turn",
             { game_no, turn_no }, // Pass parameters in the query string
             function (data) {
                 console.log("Server response:", data);
 
-                // Ensure the new turn is different from the current one
+                // Check if new turn and current one are different
                 if (data.new_turn_no && data.new_turn_no !== data.turn_no) {
                     console.log("New turn detected. Redirecting to player.html...");
                     const redirectUrl = `/player.html?game_no=${data.game_no}&turn_no=${data.new_turn_no}&board=${encodeURIComponent(data.board)}`;

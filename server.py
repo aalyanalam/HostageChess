@@ -14,7 +14,7 @@ from datetime import datetime
 
 GAME_TIME = 300
 DATABASE = 'hostageChess.db'
-
+# Class for handling sql database
 class DBHandler:
     def __init__(self, db_name='hostageChess.db'):
         self.db_name = db_name
@@ -63,7 +63,7 @@ class MyHandler(BaseHTTPRequestHandler):
         # Serve index.html
         if parsed.path in ['/index.html', '/']:
             try:
-                # Construct the path to the index.html file in the client directory
+                #Make path to the index.html file in the client directory (use this in other end-points)
                 file_path = os.path.join('client', 'index.html')
                 with open(file_path, 'r') as file:
                     content = file.read()
@@ -77,7 +77,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(b"<html><body><h1>404 Not Found</h1></body></html>")
         
-        # Serve CSS files (added functionality)
+        # Serve CSS files
         elif parsed.path.startswith('/css/'):
             try:
                 file_path = '.' + self.path
@@ -93,7 +93,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(b"<html><body><h1>404 Not Found</h1></body></html>")
         
-        # Serve JS files (added functionality)
+        # Serve JS files
         elif parsed.path.startswith('/js/'):
             try:
                 file_path = '.' + self.path
@@ -109,7 +109,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(b"<html><body><h1>404 Not Found</h1></body></html>")
         
-        # Serve images from img/chesspieces/ (added functionality)
+        # Serve images from img/chesspieces/ 
         elif parsed.path.startswith('/img/'):
             try:
                 file_path = '.' + self.path
@@ -139,7 +139,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 self.wfile.write(b"<html><body><h1>404 Not Found</h1></body></html>")
         elif parsed.path.startswith('/audio/'):
             try:
-                file_path = '.' + parsed.path  # Resolve the file path
+                file_path = '.' + parsed.path 
                 with open(file_path, 'rb') as file:
                     self.send_response(200)
                     self.send_header("Content-type", "audio/mpeg")
@@ -197,12 +197,12 @@ class MyHandler(BaseHTTPRequestHandler):
                 games = cursor.fetchall()
                 conn.close()
 
-                # Load the history.html file
+                # Load history.html file
                 file_path = os.path.join('client', 'history.html')
                 with open(file_path, 'r') as file:
                     content = file.read()
 
-                # Construct a table with games data
+                # Construct the table with games data
                 rows = ""
                 for game_no, white_handle, black_handle, result in games:
                     rows += f"<tr onclick=\"window.location.href='/gamelog.html?game_no={game_no}'\">"
@@ -225,14 +225,13 @@ class MyHandler(BaseHTTPRequestHandler):
         
         elif parsed.path in ['/gamelog.html']:
             try:
-                print("DEBUG: Entering /gamelog.html handler.")
+
                 
-                # Parse query parameters
+                #Parse query parameters
                 query_params = dict(parse_qsl(parsed.query))
                 game_no = query_params.get('game_no')
 
                 if not game_no:
-                    print("DEBUG: Missing game_no parameter.")
                     self.send_response(400)
                     self.end_headers()
                     self.wfile.write(b"<html><body><h1>400 Bad Request: Missing game_no parameter</h1></body></html>")
@@ -241,13 +240,13 @@ class MyHandler(BaseHTTPRequestHandler):
                 conn = sqlite3.connect(DATABASE)
                 cursor = conn.cursor()
 
-                # Fetch all turns for the specified GAME_NO
+                #Fetch all the turns for the GAME_NO
                 cursor.execute("""
                     SELECT TURN_NO, TURN, BOARD FROM boards WHERE GAME_NO = ? ORDER BY TURN_NO ASC
                 """, (game_no,))
                 turns = cursor.fetchall()
 
-                # Fetch the game's result
+                # Fetch result
                 cursor.execute("""
                     SELECT RESULT FROM games WHERE GAME_NO = ?
                 """, (game_no,))
@@ -256,13 +255,12 @@ class MyHandler(BaseHTTPRequestHandler):
                 conn.close()
 
                 if not turns:
-                    print("DEBUG: No turns found for Game No:", game_no)
                     self.send_response(404)
                     self.end_headers()
                     self.wfile.write(b"<html><body><h1>404 Game Not Found</h1></body></html>")
                     return
 
-                # Prepare the game log HTML
+                # Prepare game log HTML
                 file_path = os.path.join('client', 'gamelog.html')
                 with open(file_path, 'r') as file:
                     content = file.read()
@@ -289,7 +287,7 @@ class MyHandler(BaseHTTPRequestHandler):
                     self.wfile.write(bytes(content, "utf-8"))
 
             except Exception as e:
-                print(f"DEBUG: Error in /gamelog.html: {e}")
+                print(f"Error in /gamelog.html: {e}")
                 self.send_response(500)
                 self.end_headers()
                 self.wfile.write(b"<html><body><h1>500 Internal Server Error</h1></body></html>")
@@ -300,12 +298,9 @@ class MyHandler(BaseHTTPRequestHandler):
                 game_no = query_params.get('game_no', '')
                 turn_no = query_params.get('turn_no', '')
 
-                print(f"Game Number in /done.js: {game_no}, Turn Number: {turn_no}")
-
                 file_path = './done.js'
                 with open(file_path, 'r') as file:
                     content = file.read()
-                    # Replace placeholders with actual game data
                     content = content.replace('{game_no}', str(game_no))
                     content = content.replace('{turn_no}', str(turn_no))
 
@@ -321,15 +316,13 @@ class MyHandler(BaseHTTPRequestHandler):
 
         elif parsed.path in ['/player.html']:
             try:
-                print("DEBUG: Entering /player.html handler.")
 
-                # Extract query parameters
+                #Extract query parameters
                 query_params = dict(parse_qsl(parsed.query))
                 game_no = query_params.get('game_no')
                 turn_no = query_params.get('turn_no')
 
                 if not game_no or not turn_no:
-                    print("DEBUG: Missing game_no or turn_no parameters.")
                     self.send_response(400)
                     self.end_headers()
                     self.wfile.write(b"<html><body><h1>400 Bad Request: Missing parameters</h1></body></html>")
@@ -339,7 +332,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 conn = sqlite3.connect(DATABASE)
                 cursor = conn.cursor()
 
-                # Fetch current turn details
+                #Fetch current turn info
                 cursor.execute("""
                     SELECT TURN, BOARD, REAL_TIME, WHITE_TIME, BLACK_TIME
                     FROM boards
@@ -348,7 +341,6 @@ class MyHandler(BaseHTTPRequestHandler):
                 row = cursor.fetchone()
 
                 if not row:
-                    print(f"DEBUG: No board data found for Game No: {game_no}, Turn No: {turn_no}.")
                     self.send_response(404)
                     self.end_headers()
                     self.wfile.write(b"<html><body><h1>404 Turn Not Found</h1></body></html>")
@@ -357,7 +349,7 @@ class MyHandler(BaseHTTPRequestHandler):
 
                 turn_color, board, real_time, white_time, black_time = row
 
-                # Format timers for display
+                #Format timers for display
                 def format_time(seconds):
                     minutes = seconds // 60
                     sec = seconds % 60
@@ -365,8 +357,6 @@ class MyHandler(BaseHTTPRequestHandler):
 
                 formatted_wtime = format_time(white_time)
                 formatted_btime = format_time(black_time)
-
-                print(f"DEBUG: Board: {board}, White Time: {white_time}, Black Time: {black_time}")
 
                 # Serve player.html
                 file_path = os.path.join('client', 'player.html')
@@ -396,16 +386,13 @@ class MyHandler(BaseHTTPRequestHandler):
         
         elif parsed.path in ['/opponent.html']:
             try:
-                print("DEBUG: Entering /opponent.html handler.")
-                
-                # Parse query parameters
+                #Parse query parameters
                 query_params = dict(parse_qsl(parsed.query))
                 game_no = query_params.get('game_no')
                 turn_no = query_params.get('turn_no')
-                board = query_params.get('board')  # Optional, only present if coming from /player.html
+                board = query_params.get('board')  # only if coming from /player.html
 
                 if not game_no or not turn_no:
-                    print("DEBUG: Missing game_no or turn_no parameters.")
                     self.send_response(400)
                     self.end_headers()
                     self.wfile.write(b"<html><body><h1>400 Bad Request: Missing parameters</h1></body></html>")
@@ -414,17 +401,15 @@ class MyHandler(BaseHTTPRequestHandler):
                 turn_no = int(turn_no)
                 conn = sqlite3.connect(DATABASE)
                 cursor = conn.cursor()
-                
+                # Almost broke into tears when this worked
                 if board:
-                    print(f"DEBUG: Adding new row for Game No: {game_no}, Turn No: {turn_no}.")
-
-                    # Check if either King is missing
+                    #Check if either King is missing
                     if 'K' not in board or 'k' not in board:
                         winner = "White" if 'k' not in board else "Black"
                         loser = "Black" if winner == "White" else "White"
                         result = f"{winner} wins: Opponent's king was captured."
 
-                        # Insert the new turn into the database for the other player to be redirected
+                        # Insert new turn into the database for the other player to be redirected
                         next_turn_color = loser
                         cursor.execute("""
                             INSERT INTO boards (GAME_NO, TURN_NO, TURN, BOARD, REAL_TIME, WHITE_TIME, BLACK_TIME)
@@ -437,8 +422,6 @@ class MyHandler(BaseHTTPRequestHandler):
                             UPDATE games SET RESULT = ? WHERE GAME_NO = ?
                         """, (result, game_no))
                         conn.commit()
-
-                        print(f"DEBUG: Game result updated: {result}")
 
                         # Serve a game-over message
                         result_page_content = f"""
@@ -505,8 +488,6 @@ class MyHandler(BaseHTTPRequestHandler):
                             """, (result, game_no))
                             conn.commit()
 
-                            print(f"DEBUG: Game result updated: {result}")
-
                             # Serve a page with the result message and links to /history.html and /index.html
                             result_page_content = f"""
                             <html>
@@ -525,10 +506,7 @@ class MyHandler(BaseHTTPRequestHandler):
                             conn.close()
                             return
 
-                        print(f"DEBUG: New turn inserted. Turn No: {turn_no}, Next Turn: {next_turn_color}")
-
                     else:
-                        print("DEBUG: No previous turn found.")
                         self.send_response(404)
                         self.end_headers()
                         self.wfile.write(b"<html><body><h1>404 Turn Not Found</h1></body></html>")
@@ -583,6 +561,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(b"<html><body><h1>500 Internal Server Error</h1></body></html>")
         
+        # Thought it would be simple after check_black_handle -_-
         elif parsed.path in ['/check_new_turn']:
             try:
                 query_params = dict(parse_qsl(parsed.query))
@@ -603,6 +582,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 self.send_response(200)
                 self.send_header("Content-Type", "application/json")
                 self.end_headers()
+                # Comparing the row and turn_no saved my life
                 if (row > turn_no):
                     next_turn_no = turn_no + 1
                     next_turn = 'White' if next_turn_no % 2 == 1 else 'Black'
@@ -626,7 +606,7 @@ class MyHandler(BaseHTTPRequestHandler):
 
         elif parsed.path in ['/waitpage.js']:
             try:
-                file_path = './waitpage.js'  # Point to the server's root directory
+                file_path = './waitpage.js'  #server's root directory
                 with open(file_path, 'r') as file:
                     content = file.read()
                     self.send_response(200)
@@ -639,6 +619,7 @@ class MyHandler(BaseHTTPRequestHandler):
                 self.end_headers()
                 self.wfile.write(b"<html><body><h1>404 Not Found</h1></body></html>")
 
+        #I think this is useless now
         elif parsed.path in ['/upload.html']:
             # Existing code for /upload.html
             try:
@@ -659,6 +640,7 @@ class MyHandler(BaseHTTPRequestHandler):
         # handle post request
         parsed = urlparse(self.path)
 
+        #Also useless I believe
         if parsed.path in ['/board.html']:
             form = cgi.FieldStorage(fp=self.rfile,
                                     headers=self.headers,
@@ -793,7 +775,6 @@ class MyHandler(BaseHTTPRequestHandler):
                 self.send_header("Location", f"/opponent.html?game_no={game_no}&turn_no=1")
                 self.end_headers()
 
-                # Notify Player 1 by including Player 2's handle in AJAX polling (handled via waitpage.js)
             else:
                 # Player 1 is starting a new game
                 cursor.execute("INSERT INTO games (WHITE_HANDLE) VALUES (?)", (handle,))
@@ -809,7 +790,7 @@ class MyHandler(BaseHTTPRequestHandler):
 
         
 
-        
+        #Not totally useless used it in index        
         elif parsed.path in ['/display.html']:
             # Parse the multipart form data
             form = cgi.FieldStorage(fp=self.rfile,
